@@ -1,3 +1,5 @@
+using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -52,30 +54,41 @@ namespace JackAnalyser.Tests
         public void ChecksWhetherAtEnd()
         {
             var t = new Tokeniser("class");
-            t.AtEnd().Should().BeFalse();
+            t.AtEnd.Should().BeFalse();
             t.GetNextToken();
-            t.AtEnd().Should().BeTrue();
+            t.AtEnd.Should().BeTrue();
         }
 
         [TestMethod]
         public void IgnoresWhitespaceWhenCheckingIfAtEnd()
         {
             var t = new Tokeniser("   class\n\t   ");
-            t.AtEnd().Should().BeFalse();
+            t.AtEnd.Should().BeFalse();
             t.GetNextToken();
-            t.AtEnd().Should().BeTrue();
+            t.AtEnd.Should().BeTrue();
         }
 
         [TestMethod]
         public void IsImmediatelyAtEndIfInputIsEmpty()
         {
-            new Tokeniser("").AtEnd().Should().BeTrue();
+            new Tokeniser("").AtEnd.Should().BeTrue();
         }
 
         [TestMethod]
         public void NextTokenIsNullIfAtEnd()
         {
             new Tokeniser("").GetNextToken().Should().BeNull();
+        }
+
+        [TestMethod]
+        public void WorksWhenPassedAStream()
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes("static field\n");
+            using var stream = new MemoryStream(bytes);
+            var t = new Tokeniser(stream);
+            t.GetNextToken().Value.Should().Be("static");
+            t.GetNextToken().Value.Should().Be("field");
+            t.AtEnd.Should().BeTrue();
         }
     }
 

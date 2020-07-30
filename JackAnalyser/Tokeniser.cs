@@ -1,33 +1,43 @@
 ﻿using System;
+using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 
 namespace JackAnalyser
 {
-    public class Tokeniser
+    public class Tokeniser : IDisposable
     {
-        private readonly string input;
-        private int position;
+        private bool disposedValue;
+        private readonly StreamReader streamReader;
 
         public Tokeniser(string input)
         {
-            this.input = input;
-            position = 0;
+            byte[] bytes = Encoding.UTF8.GetBytes(input);
+            streamReader = new StreamReader(new MemoryStream(bytes));
         }
+
+        public Tokeniser(Stream stream)
+        {
+            streamReader = new StreamReader(stream);
+        }
+
+        private bool IsWhitespace => Regex.IsMatch(((char)streamReader.Peek()).ToString(), @"\s");
+
+        public bool AtEnd => streamReader.EndOfStream;
 
         public Token GetNextToken()
         {
-            if (AtEnd()) return null;
+            SkipWhitespace();
+            if (AtEnd) return null;
             return new KeywordToken(GetChunk());
         }
 
         private string GetChunk()
         {
             var chunk = new StringBuilder();
-            while(position < input.Length && !IsWhitespace())
+            while (!AtEnd && !IsWhitespace)
             {
-                chunk.Append(input[position]);
-                position++;
+                chunk.Append((char)streamReader.Read());
             }
             SkipWhitespace();
             return chunk.ToString();
@@ -35,21 +45,28 @@ namespace JackAnalyser
 
         private void SkipWhitespace()
         {
-            while (position < input.Length && IsWhitespace())
+            while (!AtEnd && IsWhitespace)
             {
-                position++;
+                streamReader.Read();
             }
         }
 
-        private bool IsWhitespace()
+        protected virtual void Dispose(bool disposing)
         {
-            return Regex.IsMatch(input.Substring(position, 1), @"\s");
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    streamReader.Dispose();
+                }
+                disposedValue = true;
+            }
         }
 
-        public bool AtEnd()
+        public void Dispose()
         {
-            SkipWhitespace();
-            return position == input.Length;
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
