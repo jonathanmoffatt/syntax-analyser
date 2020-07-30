@@ -31,6 +31,7 @@ namespace JackAnalyser
             if (AtEnd) return null;
             string chunk = GetChunk();
             if (IsSymbol(chunk)) return new SymbolToken(chunk);
+            if (IsInteger(chunk)) return new IntegerConstantToken(chunk);
             return new KeywordToken(chunk);
         }
 
@@ -54,6 +55,7 @@ namespace JackAnalyser
         }
 
         private bool IsSymbol(string s) => symbols.Contains(s);
+        private bool IsInteger(string s) => Regex.IsMatch(s, @"^\d+$");
 
         protected virtual void Dispose(bool disposing)
         {

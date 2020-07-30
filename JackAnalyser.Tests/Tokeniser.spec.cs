@@ -55,6 +55,21 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
+        public void IdentifiesIntegerConstants()
+        {
+            Token token = new Tokeniser("12345").GetNextToken();
+            token.Should().BeOfType<IntegerConstantToken>();
+            token.Value.Should().Be("12345");
+        }
+
+        [TestMethod]
+        public void RejectsIntegersContainingStrings()
+        {
+            Token token = new Tokeniser("123four5").GetNextToken();
+            token.Should().NotBeOfType<IntegerConstantToken>();
+        }
+
+        [TestMethod]
         public void WalksThroughTheInput()
         {
             var t = new Tokeniser("static field let");
