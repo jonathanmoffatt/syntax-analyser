@@ -7,6 +7,7 @@ namespace JackAnalyser
 {
     public class Tokeniser : IDisposable
     {
+        private const string symbols = "{}()[].,;+-*/&|<>=~";
         private bool disposedValue;
         private readonly StreamReader streamReader;
 
@@ -27,7 +28,10 @@ namespace JackAnalyser
         public Token GetNextToken()
         {
             SkipWhitespace();
-            return AtEnd ? null : new KeywordToken(GetChunk());
+            if (AtEnd) return null;
+            string chunk = GetChunk();
+            if (IsSymbol(chunk)) return new SymbolToken(chunk);
+            return new KeywordToken(chunk);
         }
 
         private string GetChunk()
@@ -48,6 +52,8 @@ namespace JackAnalyser
                 streamReader.Read();
             }
         }
+
+        private bool IsSymbol(string s) => symbols.Contains(s);
 
         protected virtual void Dispose(bool disposing)
         {

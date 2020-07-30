@@ -1,6 +1,5 @@
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -29,6 +28,30 @@ namespace JackAnalyser.Tests
         public void IdentifiesTheClassKeyword()
         {
             new Tokeniser("class").GetNextToken().Value.Should().Be("class");
+        }
+
+        [TestMethod]
+        public void IdentifiesAllKeywords()
+        {
+            var t = new Tokeniser("class constructor function method field static var int char boolean void true false null this let do if else while return");
+            Token token = t.GetNextToken();
+            while (token != null)
+            {
+                token.Should().BeOfType<KeywordToken>();
+                token = t.GetNextToken();
+            }
+        }
+
+        [TestMethod]
+        public void IdentifiesAllSymbols()
+        {
+            var t = new Tokeniser("{ } ( ) [ ] . , ; + - * / & | < > = ~");
+            Token token = t.GetNextToken();
+            while (token != null)
+            {
+                token.Should().BeOfType<SymbolToken>();
+                token = t.GetNextToken();
+            }
         }
 
         [TestMethod]
