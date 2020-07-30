@@ -51,33 +51,31 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void ChecksWhetherAtEnd()
+        public void NextTokenIsNullIfAtEnd()
         {
             var t = new Tokeniser("class");
-            t.AtEnd.Should().BeFalse();
             t.GetNextToken();
-            t.AtEnd.Should().BeTrue();
+            t.GetNextToken().Should().BeNull();
         }
 
         [TestMethod]
         public void IgnoresWhitespaceWhenCheckingIfAtEnd()
         {
-            var t = new Tokeniser("   class\n\t   ");
-            t.AtEnd.Should().BeFalse();
+            var t = new Tokeniser("class\n\t\t  \n ");
             t.GetNextToken();
-            t.AtEnd.Should().BeTrue();
+            t.GetNextToken().Should().BeNull();
         }
 
         [TestMethod]
         public void IsImmediatelyAtEndIfInputIsEmpty()
         {
-            new Tokeniser("").AtEnd.Should().BeTrue();
+            new Tokeniser("").GetNextToken().Should().BeNull();
         }
 
         [TestMethod]
-        public void NextTokenIsNullIfAtEnd()
+        public void IsImmediatelyAtEndIfInputIsAllWhitespace()
         {
-            new Tokeniser("").GetNextToken().Should().BeNull();
+            new Tokeniser("    \n   \t  \r\n   ").GetNextToken().Should().BeNull();
         }
 
         [TestMethod]
@@ -88,7 +86,7 @@ namespace JackAnalyser.Tests
             var t = new Tokeniser(stream);
             t.GetNextToken().Value.Should().Be("static");
             t.GetNextToken().Value.Should().Be("field");
-            t.AtEnd.Should().BeTrue();
+            t.GetNextToken().Should().BeNull();
         }
     }
 

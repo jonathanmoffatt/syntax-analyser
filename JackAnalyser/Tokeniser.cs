@@ -22,14 +22,12 @@ namespace JackAnalyser
         }
 
         private bool IsWhitespace => Regex.IsMatch(((char)streamReader.Peek()).ToString(), @"\s");
-
-        public bool AtEnd => streamReader.EndOfStream;
+        private bool AtEnd => streamReader.EndOfStream;
 
         public Token GetNextToken()
         {
             SkipWhitespace();
-            if (AtEnd) return null;
-            return new KeywordToken(GetChunk());
+            return AtEnd ? null : new KeywordToken(GetChunk());
         }
 
         private string GetChunk()
