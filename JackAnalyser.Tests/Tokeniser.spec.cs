@@ -32,56 +32,6 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void RecognisesAllKeywords()
-        {
-            using var t = new Tokeniser("class constructor function method field static var int char boolean void true false null this let do if else while return");
-            Token token = t.GetNextToken();
-            while (token != null)
-            {
-                token.Should().BeOfType<KeywordToken>();
-                token = t.GetNextToken();
-            }
-        }
-
-        [TestMethod]
-        public void RecognisesAllSymbols()
-        {
-            using var t = new Tokeniser("{ } ( ) [ ] . , ; + - * / & | < > = ~");
-            Token token = t.GetNextToken();
-            while (token != null)
-            {
-                token.Should().BeOfType<SymbolToken>();
-                token = t.GetNextToken();
-            }
-        }
-
-        [TestMethod]
-        public void RecognisesIntegerConstants()
-        {
-            using var t = new Tokeniser("12345");
-            Token token = t.GetNextToken();
-            token.Should().BeOfType<IntegerConstantToken>();
-            token.Value.Should().Be("12345");
-        }
-
-        [TestMethod]
-        public void RejectsIntegersContainingStrings()
-        {
-            using var t = new Tokeniser("123four5");
-            Token token = t.GetNextToken();
-            token.Should().NotBeOfType<IntegerConstantToken>();
-        }
-
-        [TestMethod]
-        public void RecognisesStringConstants()
-        {
-            using var t = new Tokeniser("\"the quick brown fox, jumps over 23 ______ (of something)\"");
-            Token token = t.GetNextToken();
-            token.Should().BeOfType<StringConstantToken>();
-            token.Value.Should().Be("the quick brown fox, jumps over 23 ______ (of something)");
-        }
-
-        [TestMethod]
         public void WalksThroughTheInput()
         {
             using var t = new Tokeniser("static field let");
@@ -138,6 +88,142 @@ namespace JackAnalyser.Tests
             using var t = new Tokeniser(stream);
             t.GetNextToken().Value.Should().Be("static");
             t.GetNextToken().Value.Should().Be("field");
+            t.GetNextToken().Should().BeNull();
+        }
+
+        [TestMethod]
+        public void RecognisesAllKeywords()
+        {
+            using var t = new Tokeniser("class constructor function method field static var int char boolean void true false null this let do if else while return");
+            Token token = t.GetNextToken();
+            while (token != null)
+            {
+                token.Should().BeOfType<KeywordToken>();
+                token = t.GetNextToken();
+            }
+        }
+
+        [TestMethod]
+        public void RecognisesAllSymbols()
+        {
+            using var t = new Tokeniser("{ } ( ) [ ] . , ; + - * / & | < > = ~");
+            Token token = t.GetNextToken();
+            while (token != null)
+            {
+                token.Should().BeOfType<SymbolToken>();
+                token = t.GetNextToken();
+            }
+        }
+
+        [TestMethod]
+        public void RecognisesIntegerConstants()
+        {
+            using var t = new Tokeniser("12345");
+            Token token = t.GetNextToken();
+            token.Should().BeOfType<IntegerConstantToken>();
+            token.Value.Should().Be("12345");
+        }
+
+        [TestMethod]
+        public void RejectsIntegersContainingStrings()
+        {
+            using var t = new Tokeniser("123four5");
+            Token token = t.GetNextToken();
+            token.Should().NotBeOfType<IntegerConstantToken>();
+        }
+
+        [TestMethod]
+        public void RecognisesStringConstants()
+        {
+            using var t = new Tokeniser("\"the quick brown fox, jumps over 23 ______ (of something)\"");
+            Token token = t.GetNextToken();
+            token.Should().BeOfType<StringConstantToken>();
+            token.Value.Should().Be("the quick brown fox, jumps over 23 ______ (of something)");
+        }
+
+        [TestMethod]
+        public void RecognisesStraightforwardIdentifiers()
+        {
+            using var t = new Tokeniser("counter");
+            Token token = t.GetNextToken();
+            token.Should().BeOfType<IdentifierToken>();
+            token.Value.Should().Be("counter");
+        }
+
+        [TestMethod]
+        public void RecognisesMoreComplexIdentifiers()
+        {
+            using var t = new Tokeniser("first_3_entries");
+            Token token = t.GetNextToken();
+            token.Should().BeOfType<IdentifierToken>();
+            token.Value.Should().Be("first_3_entries");
+        }
+
+        [TestMethod]
+        public void HandlesCombinationsOfTypes()
+        {
+            using var t = new Tokeniser("let first_3_entries=\"three\";let x=x+1;\nreturn x;\n");
+
+            Token token = t.GetNextToken();
+            token.Value.Should().Be("let");
+            token.Should().BeOfType<KeywordToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("first_3_entries");
+            token.Should().BeOfType<IdentifierToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("=");
+            token.Should().BeOfType<SymbolToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("three");
+            token.Should().BeOfType<StringConstantToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be(";");
+            token.Should().BeOfType<SymbolToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("let");
+            token.Should().BeOfType<KeywordToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("x");
+            token.Should().BeOfType<IdentifierToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("=");
+            token.Should().BeOfType<SymbolToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("x");
+            token.Should().BeOfType<IdentifierToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("+");
+            token.Should().BeOfType<SymbolToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("1");
+            token.Should().BeOfType<IntegerConstantToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be(";");
+            token.Should().BeOfType<SymbolToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("return");
+            token.Should().BeOfType<KeywordToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be("x");
+            token.Should().BeOfType<IdentifierToken>();
+
+            token = t.GetNextToken();
+            token.Value.Should().Be(";");
+            token.Should().BeOfType<SymbolToken>();
+
             t.GetNextToken().Should().BeNull();
         }
     }
