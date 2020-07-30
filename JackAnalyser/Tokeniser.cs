@@ -32,15 +32,19 @@ namespace JackAnalyser
             string chunk = GetChunk();
             if (IsSymbol(chunk)) return new SymbolToken(chunk);
             if (IsInteger(chunk)) return new IntegerConstantToken(chunk);
+            if (IsString(chunk)) return new StringConstantToken(chunk);
             return new KeywordToken(chunk);
         }
 
         private string GetChunk()
         {
             var chunk = new StringBuilder();
-            while (!AtEnd && !IsWhitespace)
+            bool insideStringConstant = false;
+            while (!AtEnd && (!IsWhitespace || insideStringConstant))
             {
-                chunk.Append((char)streamReader.Read());
+                char c = (char)streamReader.Read();
+                if (c == '"') insideStringConstant = !insideStringConstant;
+                chunk.Append(c);
             }
             SkipWhitespace();
             return chunk.ToString();
@@ -56,6 +60,7 @@ namespace JackAnalyser
 
         private bool IsSymbol(string s) => symbols.Contains(s);
         private bool IsInteger(string s) => Regex.IsMatch(s, @"^\d+$");
+        private bool IsString(string s) => s.StartsWith('"') && s.EndsWith('"');
 
         protected virtual void Dispose(bool disposing)
         {

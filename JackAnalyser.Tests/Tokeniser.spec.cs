@@ -18,22 +18,23 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void IdentifiesAKeywordToken()
+        public void RecognisesAKeywordToken()
         {
-            Token t = new Tokeniser("class").GetNextToken();
-            t.Should().BeOfType<KeywordToken>();
+            using var t = new Tokeniser("class");
+            t.GetNextToken().Should().BeOfType<KeywordToken>();
         }
 
         [TestMethod]
-        public void IdentifiesTheClassKeyword()
+        public void RecognisesTheClassKeyword()
         {
-            new Tokeniser("class").GetNextToken().Value.Should().Be("class");
+            using var t = new Tokeniser("class");
+            t.GetNextToken().Value.Should().Be("class");
         }
 
         [TestMethod]
-        public void IdentifiesAllKeywords()
+        public void RecognisesAllKeywords()
         {
-            var t = new Tokeniser("class constructor function method field static var int char boolean void true false null this let do if else while return");
+            using var t = new Tokeniser("class constructor function method field static var int char boolean void true false null this let do if else while return");
             Token token = t.GetNextToken();
             while (token != null)
             {
@@ -43,9 +44,9 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void IdentifiesAllSymbols()
+        public void RecognisesAllSymbols()
         {
-            var t = new Tokeniser("{ } ( ) [ ] . , ; + - * / & | < > = ~");
+            using var t = new Tokeniser("{ } ( ) [ ] . , ; + - * / & | < > = ~");
             Token token = t.GetNextToken();
             while (token != null)
             {
@@ -55,9 +56,10 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void IdentifiesIntegerConstants()
+        public void RecognisesIntegerConstants()
         {
-            Token token = new Tokeniser("12345").GetNextToken();
+            using var t = new Tokeniser("12345");
+            Token token = t.GetNextToken();
             token.Should().BeOfType<IntegerConstantToken>();
             token.Value.Should().Be("12345");
         }
@@ -65,14 +67,24 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void RejectsIntegersContainingStrings()
         {
-            Token token = new Tokeniser("123four5").GetNextToken();
+            using var t = new Tokeniser("123four5");
+            Token token = t.GetNextToken();
             token.Should().NotBeOfType<IntegerConstantToken>();
+        }
+
+        [TestMethod]
+        public void RecognisesStringConstants()
+        {
+            using var t = new Tokeniser("\"the quick brown fox, jumps over 23 ______ (of something)\"");
+            Token token = t.GetNextToken();
+            token.Should().BeOfType<StringConstantToken>();
+            token.Value.Should().Be("the quick brown fox, jumps over 23 ______ (of something)");
         }
 
         [TestMethod]
         public void WalksThroughTheInput()
         {
-            var t = new Tokeniser("static field let");
+            using var t = new Tokeniser("static field let");
             t.GetNextToken().Value.Should().Be("static");
             t.GetNextToken().Value.Should().Be("field");
             t.GetNextToken().Value.Should().Be("let");
@@ -81,7 +93,7 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void SkipsOverWhitespace()
         {
-            var t = new Tokeniser("    static     field\nlet   \r\n\tclass");
+            using var t = new Tokeniser("    static     field\nlet   \r\n\tclass");
             t.GetNextToken().Value.Should().Be("static");
             t.GetNextToken().Value.Should().Be("field");
             t.GetNextToken().Value.Should().Be("let");
@@ -91,7 +103,7 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void NextTokenIsNullIfAtEnd()
         {
-            var t = new Tokeniser("class");
+            using var t = new Tokeniser("class");
             t.GetNextToken();
             t.GetNextToken().Should().BeNull();
         }
@@ -99,7 +111,7 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void IgnoresWhitespaceWhenCheckingIfAtEnd()
         {
-            var t = new Tokeniser("class\n\t\t  \n ");
+            using var t = new Tokeniser("class\n\t\t  \n ");
             t.GetNextToken();
             t.GetNextToken().Should().BeNull();
         }
@@ -107,13 +119,15 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void IsImmediatelyAtEndIfInputIsEmpty()
         {
-            new Tokeniser("").GetNextToken().Should().BeNull();
+            using var t = new Tokeniser("");
+            t.GetNextToken().Should().BeNull();
         }
 
         [TestMethod]
         public void IsImmediatelyAtEndIfInputIsAllWhitespace()
         {
-            new Tokeniser("    \n   \t  \r\n   ").GetNextToken().Should().BeNull();
+            using var t = new Tokeniser("    \n   \t  \r\n   ");
+            t.GetNextToken().Should().BeNull();
         }
 
         [TestMethod]
@@ -121,7 +135,7 @@ namespace JackAnalyser.Tests
         {
             byte[] bytes = Encoding.UTF8.GetBytes("static field\n");
             using var stream = new MemoryStream(bytes);
-            var t = new Tokeniser(stream);
+            using var t = new Tokeniser(stream);
             t.GetNextToken().Value.Should().Be("static");
             t.GetNextToken().Value.Should().Be("field");
             t.GetNextToken().Should().BeNull();
