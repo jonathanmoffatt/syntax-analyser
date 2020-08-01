@@ -26,7 +26,7 @@ namespace JackAnalyser
 
         private static void Process(string sourceFile)
         {
-            Console.WriteLine($"Processing {sourceFile}");
+            Console.WriteLine($"Processing {Path.GetFileName(sourceFile)} ...");
             var xml = new XDocument();
             XElement root = new XElement("tokens");
             xml.Add(root);
@@ -47,7 +47,7 @@ namespace JackAnalyser
                 Encoding = new UTF8Encoding(false)
             });
             xml.Save(xmlWriter);
-            Console.WriteLine($"Tokens written to {fileName}");
+            Console.WriteLine($"... tokens written to {Path.GetFileName(fileName)}");
         }
 
         private static bool Initialise(string[] args)
