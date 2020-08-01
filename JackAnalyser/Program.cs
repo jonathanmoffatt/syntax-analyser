@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace JackAnalyser
@@ -19,10 +20,12 @@ namespace JackAnalyser
             {
                 Process(sourceFile);
             }
+            Console.WriteLine("Done.");
         }
 
         private static void Process(string sourceFile)
         {
+            Console.WriteLine($"Processing {sourceFile}");
             var xml = new XDocument();
             XElement root = new XElement("tokens");
             xml.Add(root);
@@ -32,8 +35,13 @@ namespace JackAnalyser
             while(token != null)
             {
                 root.Add(token.ToXml());
+                token = tokeniser.GetNextToken();
             }
-            xml.Save(GetOutputFileName(sourceFile, "T"));
+
+            string fileName = GetOutputFileName(sourceFile, "T");
+            using XmlWriter xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true });
+            xml.Save(xmlWriter);
+            Console.WriteLine($"Tokens written to {fileName}");
         }
 
         private static bool Initialise(string[] args)
