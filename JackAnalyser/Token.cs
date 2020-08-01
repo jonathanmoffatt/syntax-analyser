@@ -14,7 +14,7 @@ namespace JackAnalyser
 
         public XElement ToXml()
         {
-            return new XElement(ElementName, Value);
+            return new XElement(ElementName, $" {Value} ");
         }
     }
 }

@@ -17,9 +17,9 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void ShouldPopulateXmlElementWithTheValueOfTheToken()
+        public void ShouldPopulateXmlElementWithTheValueOfTheTokenWithPadding()
         {
-            new SymbolToken(")").ToXml().Value.Should().Be(")");
+            new SymbolToken(")").ToXml().Value.Should().Be(" ) ");
         }
 
         [TestMethod]
