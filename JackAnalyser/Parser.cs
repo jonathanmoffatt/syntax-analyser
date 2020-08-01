@@ -7,16 +7,10 @@ namespace JackAnalyser
     public class Parser
     {
         private List<Token> tokens;
-        private ITokeniser tokeniser;
-
-        public Parser(ITokeniser tokeniser)
-        {
-            this.tokeniser = tokeniser;
-        }
 
         public Tree Tree { get; set; }
 
-        public void Parse()
+        public void Parse(ITokeniser tokeniser)
         {
             tokens = new List<Token>();
             Token token = tokeniser.GetNextToken();

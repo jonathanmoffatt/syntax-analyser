@@ -1,7 +1,6 @@
 ﻿using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Moq.AutoMock;
 
 namespace JackAnalyser.Tests
 {
@@ -10,23 +9,21 @@ namespace JackAnalyser.Tests
     [TestClass]
     public class WhenRunningTheParser
     {
-        private AutoMocker mocker;
         private Parser classUnderTest;
         private Mock<ITokeniser> tokeniser;
 
         [TestInitialize]
         public void Setup()
         {
-            mocker = new AutoMocker();
-            classUnderTest = mocker.CreateInstance<Parser>();
-            tokeniser = mocker.GetMock<ITokeniser>();
+            classUnderTest = new Parser();
+            tokeniser = new Mock<ITokeniser>();
         }
 
         [TestMethod]
         public void DoesNothingIfTheFirstTokenIsNull()
         {
             tokeniser.Setup(t => t.GetNextToken()).Returns(() => null);
-            classUnderTest.Parse();
+            classUnderTest.Parse(tokeniser.Object);
             classUnderTest.Tokens().Should().BeEmpty();
         }
 
@@ -40,7 +37,7 @@ namespace JackAnalyser.Tests
                 .Returns(new SymbolToken("{"))
                 .Returns(new SymbolToken("}"))
                 .Returns(() => null);
-            classUnderTest.Parse();
+            classUnderTest.Parse(tokeniser.Object);
             classUnderTest.Tokens().Should().HaveCount(4);
         }
 
