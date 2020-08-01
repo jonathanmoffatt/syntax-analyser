@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 
@@ -32,14 +33,19 @@ namespace JackAnalyser
             using var fs = new FileStream(sourceFile, FileMode.Open);
             using var tokeniser = new Tokeniser(fs);
             Token token = tokeniser.GetNextToken();
-            while(token != null)
+            while (token != null)
             {
                 root.Add(token.ToXml());
                 token = tokeniser.GetNextToken();
             }
 
             string fileName = GetOutputFileName(sourceFile, "T");
-            using XmlWriter xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings { OmitXmlDeclaration = true, Indent = true });
+            using XmlWriter xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings
+            {
+                OmitXmlDeclaration = true,
+                Indent = true,
+                Encoding = new UTF8Encoding(false)
+            });
             xml.Save(xmlWriter);
             Console.WriteLine($"Tokens written to {fileName}");
         }
