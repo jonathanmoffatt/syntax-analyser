@@ -10,13 +10,6 @@ namespace JackAnalyser.Tests
     [TestClass]
     public class WhenWorkingWithTheTokeniser
     {
-
-        [TestInitialize]
-        public void Setup()
-        {
-
-        }
-
         [TestMethod]
         public void RecognisesAKeywordToken()
         {
@@ -157,6 +150,58 @@ namespace JackAnalyser.Tests
             Token token = t.GetNextToken();
             token.Should().BeOfType<IdentifierToken>();
             token.Value.Should().Be("first_3_entries");
+        }
+
+        [TestMethod]
+        public void IgnoresLineComments()
+        {
+            using var t = new Tokeniser("// this is a comment\nreturn");
+            t.GetNextToken().Value.Should().Be("return");
+            t.GetNextToken().Should().BeNull();
+        }
+
+        [TestMethod]
+        public void IgnoresLineCommentsAtTheEndOfLines()
+        {
+            using var t = new Tokeniser("return;  // this is a comment\n}");
+            t.GetNextToken().Value.Should().Be("return");
+            t.GetNextToken().Value.Should().Be(";");
+            t.GetNextToken().Value.Should().Be("}");
+            t.GetNextToken().Should().BeNull();
+        }
+
+        [TestMethod]
+        public void DoesNotGetFooledByDoubleSlashesInStringLiterals()
+        {
+            using var t = new Tokeniser("return \"// this is not a comment\";\n");
+            t.GetNextToken().Value.Should().Be("return");
+            t.GetNextToken().Value.Should().Be("// this is not a comment");
+            t.GetNextToken().Value.Should().Be(";");
+            t.GetNextToken().Should().BeNull();
+        }
+
+
+        [TestMethod]
+        public void IgnoresBlockComments()
+        {
+            using var t = new Tokeniser("/* get outta\nhere\n*/\nreturn");
+            t.GetNextToken().Value.Should().Be("return");
+            t.GetNextToken().Should().BeNull();
+        }
+        [TestMethod]
+        public void IgnoresBlockCommentsWithinALine()
+        {
+            using var t = new Tokeniser("/* get outta here */ return");
+            t.GetNextToken().Value.Should().Be("return");
+            t.GetNextToken().Should().BeNull();
+        }
+
+        [TestMethod]
+        public void IgnoresBlockCommentsAcrossMultipleLines()
+        {
+            using var t = new Tokeniser("/* get outta\nhere */\nreturn");
+            t.GetNextToken().Value.Should().Be("return");
+            t.GetNextToken().Should().BeNull();
         }
 
         [TestMethod]

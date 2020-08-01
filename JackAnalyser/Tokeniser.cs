@@ -8,10 +8,12 @@ namespace JackAnalyser
 {
     public class Tokeniser : IDisposable
     {
-        private string[] keywords = new[] { "class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return" };
         private const string symbols = "{}()[].,;+-*/&|<>=~";
-        private bool disposedValue;
+        private string[] keywords = new[] { "class", "constructor", "function", "method", "field", "static", "var", "int", "char", "boolean", "void", "true", "false", "null", "this", "let", "do", "if", "else", "while", "return" };
         private readonly StreamReader streamReader;
+        private bool disposedValue;
+        private int position = 0;
+        private string buffer = "";
 
         public Tokeniser(string input)
         {
@@ -25,12 +27,37 @@ namespace JackAnalyser
         }
 
         private bool IsWhitespace => Regex.IsMatch(Peek, @"\s");
-        private bool AtEnd => streamReader.EndOfStream;
-        private string Peek => AtEnd ? null : ((char)streamReader.Peek()).ToString();
-        private string Eat() => AtEnd ? null : ((char)streamReader.Read()).ToString();
+
+        private bool IsLineComment => buffer.Substring(position).StartsWith("//");
+
+        private bool IsBlockCommentStart => buffer.Substring(position).StartsWith("/*");
+
+        private bool IsBlockCommentEnd => AtEnd || buffer.Substring(position).StartsWith("*/");
+
+        private bool AtEnd => streamReader.EndOfStream && AtEndOfBuffer;
+
+        private bool AtEndOfBuffer => position >= buffer.Length;
+
+        private string Peek => AtEnd ? null : buffer.Substring(position, 1);
+
+        private string Consume()
+        {
+            if (AtEnd) return null;
+            string s = buffer.Substring(position, 1);
+            position++;
+            RefreshBuffer();
+            return s;
+        }
+
+        private void Advance()
+        {
+            if (!AtEndOfBuffer) position++;
+            RefreshBuffer();
+        }
 
         public Token GetNextToken()
         {
+            RefreshBuffer();
             SkipWhitespace();
             if (AtEnd) return null;
             string chunk = GetChunk();
@@ -41,15 +68,27 @@ namespace JackAnalyser
             return new IdentifierToken(chunk);
         }
 
+        private void RefreshBuffer()
+        {
+            if (!streamReader.EndOfStream)
+            {
+                if (buffer == null || AtEndOfBuffer)
+                {
+                    buffer = streamReader.ReadLine() + "\n";
+                    position = 0;
+                }
+            }
+        }
+
         private string GetChunk()
         {
-            if (IsSymbol(Peek)) return Eat();
+            if (IsSymbol(Peek)) return Consume();
             var chunk = new StringBuilder();
             bool insideStringConstant = false;
             while (!AtEnd && ((!IsWhitespace && !IsSymbol(Peek)) || insideStringConstant))
             {
-                char c = (char)streamReader.Read();
-                if (c == '"') insideStringConstant = !insideStringConstant;
+                string c = Consume();
+                if (c == "\"") insideStringConstant = !insideStringConstant;
                 chunk.Append(c);
             }
             SkipWhitespace();
@@ -58,10 +97,25 @@ namespace JackAnalyser
 
         private void SkipWhitespace()
         {
-            while (!AtEnd && IsWhitespace)
+            while (!AtEnd && IsWhitespace) Advance();
+            if (IsLineComment)
             {
-                streamReader.Read();
+                MoveToNextLine();
+                SkipWhitespace();
             }
+            if (IsBlockCommentStart)
+            {
+                while (!IsBlockCommentEnd) Advance();
+                Advance();
+                Advance();
+                SkipWhitespace();
+            }
+        }
+
+        private void MoveToNextLine()
+        {
+            position = buffer.Length;
+            RefreshBuffer();
         }
 
         private bool IsSymbol(string s) => symbols.Contains(s);
