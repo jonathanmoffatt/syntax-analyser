@@ -27,27 +27,25 @@ namespace JackAnalyser
         private static void Process(string sourceFile)
         {
             Console.WriteLine($"Processing {Path.GetFileName(sourceFile)} ...");
-            var xml = new XDocument();
-            XElement root = new XElement("tokens");
-            xml.Add(root);
             using var fs = new FileStream(sourceFile, FileMode.Open);
             using var tokeniser = new Tokeniser(fs);
-            Token token = tokeniser.GetNextToken();
-            while (token != null)
-            {
-                root.Add(token.ToXml());
-                token = tokeniser.GetNextToken();
-            }
+            var parser = new Parser(tokeniser);
+            parser.Parse();
+            SaveXml(sourceFile, parser.TokensXml(), true);
+            SaveXml(sourceFile, parser.ToXml(), false);
+        }
 
-            string fileName = GetOutputFileName(sourceFile, "T");
-            using XmlWriter xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings
+        private static void SaveXml(string sourceFile, XDocument xml, bool isTokens)
+        {
+            string fileName = GetOutputFileName(sourceFile, isTokens ? "T" : "");
+            XmlWriter xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings
             {
                 OmitXmlDeclaration = true,
                 Indent = true,
                 Encoding = new UTF8Encoding(false)
             });
             xml.Save(xmlWriter);
-            Console.WriteLine($"... tokens written to {Path.GetFileName(fileName)}");
+            Console.WriteLine($"... {(isTokens ? "tokens" : "parsed output")} written to {Path.GetFileName(fileName)}");
         }
 
         private static bool Initialise(string[] args)
