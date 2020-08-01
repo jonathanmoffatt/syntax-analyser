@@ -5,5 +5,7 @@
         public IdentifierToken(string identifier) : base(identifier)
         {
         }
+
+        protected override string ElementName => "identifier";
     }
 }

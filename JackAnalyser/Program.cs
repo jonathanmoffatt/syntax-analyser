@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Xml.Linq;
 
 namespace JackAnalyser
 {
@@ -14,6 +15,25 @@ namespace JackAnalyser
             bool isSingleFile = File.Exists(sourceFileOrDirectory);
 
             string[] sourceFiles = GetSourceFiles(sourceFileOrDirectory, isSingleFile);
+            foreach (string sourceFile in sourceFiles)
+            {
+                Process(sourceFile);
+            }
+        }
+
+        private static void Process(string sourceFile)
+        {
+            var xml = new XDocument();
+            XElement root = new XElement("tokens");
+            xml.Add(root);
+            using var fs = new FileStream(sourceFile, FileMode.Open);
+            using var tokeniser = new Tokeniser(fs);
+            Token token = tokeniser.GetNextToken();
+            while(token != null)
+            {
+                root.Add(token.ToXml());
+            }
+            xml.Save(GetOutputFileName(sourceFile, "T"));
         }
 
         private static bool Initialise(string[] args)
@@ -83,14 +103,12 @@ namespace JackAnalyser
             Console.WriteLine($"Results written to {outputFile}");
         }
 
-        private static string GetOutputFileName(string sourceFileOrDirectory)
+        private static string GetOutputFileName(string sourceFile, string suffix = "")
         {
-            string dir = Path.GetDirectoryName(sourceFileOrDirectory);
-            string fn = Path.GetFileNameWithoutExtension(sourceFileOrDirectory);
+            string dir = Path.GetDirectoryName(sourceFile);
+            string fn = Path.GetFileNameWithoutExtension(sourceFile);
             char sep = Path.DirectorySeparatorChar;
-            if (File.Exists(sourceFileOrDirectory))
-                return $"{dir}{sep}{fn}.asm";
-            return dir != null && dir != "" ? $"{dir}{sep}{fn}{sep}{fn}.asm" : $"{fn}{sep}{fn}.asm";
+            return $"{dir}{sep}{fn}{suffix}.xml";
         }
 
     }

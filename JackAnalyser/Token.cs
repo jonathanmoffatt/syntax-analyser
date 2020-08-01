@@ -1,12 +1,20 @@
-﻿namespace JackAnalyser
+﻿using System.Xml.Linq;
+
+namespace JackAnalyser
 {
     public abstract class Token
     {
+        public string Value { get; private set; }
+        protected abstract string ElementName { get; }
+
         protected Token(string tokenValue)
         {
-            this.Value = tokenValue;
+            Value = tokenValue;
         }
 
-        public string Value { get; private set; }
+        public XElement ToXml()
+        {
+            return new XElement(ElementName, Value);
+        }
     }
 }
