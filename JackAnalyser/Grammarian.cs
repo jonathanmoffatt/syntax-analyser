@@ -85,8 +85,10 @@ namespace JackAnalyser
 
         private void DequeueSubroutineBody(SubroutineDeclarationNode sd, Queue<Token> tokens)
         {
-            DequeueSymbol(sd, tokens, "{");
-            DequeueSymbol(sd, tokens, "}");
+            var body = new SubroutineBodyNode();
+            sd.Children.Add(body);
+            DequeueSymbol(body, tokens, "{");
+            DequeueSymbol(body, tokens, "}");
         }
 
         private void DequeueType(BranchNode parentNode, Queue<Token> tokens)

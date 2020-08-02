@@ -230,10 +230,12 @@ namespace JackAnalyser.Tests
             children[3].Should().Be(sd4);
             children[4].Should().BeOfType<ParameterListNode>();
             children[5].Should().Be(sd10);
-            children[6].Should().Be(sd11);
-            children[7].Should().Be(sd12);
-            var parameterList = (ParameterListNode)subroutineDeclaration.Children[4];
+            children[6].Should().BeOfType<SubroutineBodyNode>();
+            children.Should().HaveCount(7);
+            var parameterList = (ParameterListNode)children[4];
             parameterList.Children.Should().BeEquivalentTo(sd5, sd6, sd7, sd8, sd9);
+            var body = (SubroutineBodyNode)children[6];
+            body.Children.Should().BeEquivalentTo(sd11, sd12);
         }
 
         [TestMethod]
