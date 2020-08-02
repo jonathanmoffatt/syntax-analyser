@@ -1,8 +1,8 @@
 ﻿namespace JackAnalyser
 {
-    public abstract class Tree
+    public class ClassNode : Node
     {
-        public Tree()
+        public ClassNode()
         {
         }
     }

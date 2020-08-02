@@ -29,7 +29,7 @@ namespace JackAnalyser
             Console.WriteLine($"Processing {Path.GetFileName(sourceFile)} ...");
             using var fs = new FileStream(sourceFile, FileMode.Open);
             using var tokeniser = new Tokeniser(fs);
-            var parser = new Parser();
+            var parser = new Parser(new NodeFactory());
             parser.Parse(tokeniser);
             SaveXml(sourceFile, parser.TokensXml(), true);
             SaveXml(sourceFile, parser.ToXml(), false);

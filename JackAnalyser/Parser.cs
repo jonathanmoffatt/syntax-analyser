@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace JackAnalyser
@@ -7,8 +8,14 @@ namespace JackAnalyser
     public class Parser
     {
         private List<Token> tokens;
+        private readonly INodeFactory nodeFactory;
 
-        public Tree Tree { get; set; }
+        public Node Tree { get; set; }
+
+        public Parser(INodeFactory nodeFactory)
+        {
+            this.nodeFactory = nodeFactory;
+        }
 
         public void Parse(ITokeniser tokeniser)
         {
@@ -19,6 +26,7 @@ namespace JackAnalyser
                 tokens.Add(token);
                 token = tokeniser.GetNextToken();
             }
+            Tree = nodeFactory.Get((KeywordToken)tokens.FirstOrDefault());
         }
 
         public XDocument ToXml()
