@@ -5,9 +5,9 @@ namespace JackAnalyser
 {
     public class Grammarian : IGrammarian
     {
-        public Node Get(Queue<Token> tokens)
+        public BranchNode Get(Queue<Token> tokens)
         {
-            throw new NotImplementedException();
+            return new ClassNode();
         }
     }
 }

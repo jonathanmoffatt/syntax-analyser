@@ -1,6 +1,6 @@
 ﻿namespace JackAnalyser
 {
-    public class ClassNode : Node
+    public class ClassNode : BranchNode
     {
         public ClassNode()
         {

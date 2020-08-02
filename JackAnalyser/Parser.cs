@@ -10,7 +10,7 @@ namespace JackAnalyser
         private List<Token> tokens;
         private readonly IGrammarian nodeFactory;
 
-        public Node Tree { get; set; }
+        public BranchNode Tree { get; set; }
 
         public Parser(IGrammarian nodeFactory)
         {

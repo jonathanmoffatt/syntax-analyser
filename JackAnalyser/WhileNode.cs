@@ -1,6 +1,6 @@
 ﻿namespace JackAnalyser
 {
-    public class WhileNode : Node
+    public class WhileNode : BranchNode
     {
         public WhileNode()
         {
