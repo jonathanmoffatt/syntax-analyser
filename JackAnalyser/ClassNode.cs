@@ -2,8 +2,6 @@
 {
     public class ClassNode : BranchNode
     {
-        public ClassNode()
-        {
-        }
+        public string ClassName { get; set; }
     }
 }

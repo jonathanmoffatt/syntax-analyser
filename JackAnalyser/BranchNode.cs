@@ -1,9 +1,9 @@
-﻿namespace JackAnalyser
+﻿using System.Collections.Generic;
+
+namespace JackAnalyser
 {
-    public abstract class BranchNode
+    public abstract class BranchNode : Node
     {
-        public BranchNode()
-        {
-        }
+        public List<Node> Children { get; } = new List<Node>();
     }
 }

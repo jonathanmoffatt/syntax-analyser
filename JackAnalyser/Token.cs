@@ -2,7 +2,7 @@
 
 namespace JackAnalyser
 {
-    public abstract class Token
+    public abstract class Token : Node
     {
         public string Value { get; private set; }
         protected abstract string ElementName { get; }
