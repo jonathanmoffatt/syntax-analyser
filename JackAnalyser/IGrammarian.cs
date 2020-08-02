@@ -2,7 +2,7 @@
 
 namespace JackAnalyser
 {
-    public interface INodeFactory
+    public interface IGrammarian
     {
         Node Get(Queue<Token> tokens);
     }

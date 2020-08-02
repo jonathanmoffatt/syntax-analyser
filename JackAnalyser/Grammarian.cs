@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace JackAnalyser
 {
-    public class NodeFactory : INodeFactory
+    public class Grammarian : IGrammarian
     {
         public Node Get(Queue<Token> tokens)
         {

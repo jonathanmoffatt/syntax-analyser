@@ -46,7 +46,7 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void PassesTokensToTheNodeFactory()
+        public void PassesTokensToTheGrammarian()
         {
             KeywordToken t1 = new KeywordToken("class");
             IdentifierToken t2 = new IdentifierToken("blah");
@@ -61,7 +61,7 @@ namespace JackAnalyser.Tests
                 .Returns(() => null);
             ClassNode classNode = new ClassNode();
             mocker
-                .GetMock<INodeFactory>()
+                .GetMock<IGrammarian>()
                 .Setup(f => f.Get(It.Is<Queue<Token>>(q =>
                     q.Contains(t1) &&
                     q.Contains(t2) &&

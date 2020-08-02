@@ -8,11 +8,11 @@ namespace JackAnalyser
     public class Parser
     {
         private List<Token> tokens;
-        private readonly INodeFactory nodeFactory;
+        private readonly IGrammarian nodeFactory;
 
         public Node Tree { get; set; }
 
-        public Parser(INodeFactory nodeFactory)
+        public Parser(IGrammarian nodeFactory)
         {
             this.nodeFactory = nodeFactory;
         }
