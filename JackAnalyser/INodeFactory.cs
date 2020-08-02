@@ -1,7 +1,9 @@
-﻿namespace JackAnalyser
+﻿using System.Collections.Generic;
+
+namespace JackAnalyser
 {
     public interface INodeFactory
     {
-        Node Get(KeywordToken keyword);
+        Node Get(Queue<Token> tokens);
     }
 }

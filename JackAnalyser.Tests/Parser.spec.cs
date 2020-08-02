@@ -1,4 +1,5 @@
-﻿using FluentAssertions;
+﻿using System.Collections.Generic;
+using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.AutoMock;
@@ -45,39 +46,31 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void RecognisesClassNode()
+        public void PassesTokensToTheNodeFactory()
         {
-            KeywordToken keyword = new KeywordToken("class");
+            KeywordToken t1 = new KeywordToken("class");
+            IdentifierToken t2 = new IdentifierToken("blah");
+            SymbolToken t3 = new SymbolToken("{");
+            SymbolToken t4 = new SymbolToken("}");
             tokeniser
                 .SetupSequence(t => t.GetNextToken())
-                .Returns(keyword)
-                .Returns(new IdentifierToken("blah"))
-                .Returns(new SymbolToken("{"))
-                .Returns(new SymbolToken("}"))
+                .Returns(t1)
+                .Returns(t2)
+                .Returns(t3)
+                .Returns(t4)
                 .Returns(() => null);
             ClassNode classNode = new ClassNode();
-            mocker.GetMock<INodeFactory>().Setup(f => f.Get(keyword)).Returns(classNode);
+            mocker
+                .GetMock<INodeFactory>()
+                .Setup(f => f.Get(It.Is<Queue<Token>>(q =>
+                    q.Contains(t1) &&
+                    q.Contains(t2) &&
+                    q.Contains(t3) &&
+                    q.Contains(t4)
+                )))
+                .Returns(classNode);
             classUnderTest.Parse(tokeniser.Object);
             classUnderTest.Tree.Should().Be(classNode);
-        }
-
-        [TestMethod]
-        public void RecognisesWhileNode()
-        {
-            KeywordToken keyword = new KeywordToken("while");
-            tokeniser
-                .SetupSequence(t => t.GetNextToken())
-                .Returns(keyword)
-                .Returns(new SymbolToken("("))
-                .Returns(new IdentifierToken("blah"))
-                .Returns(new SymbolToken(")"))
-                .Returns(new SymbolToken("{"))
-                .Returns(new SymbolToken("}"))
-                .Returns(() => null);
-            var whileNode = new WhileNode();
-            mocker.GetMock<INodeFactory>().Setup(f => f.Get(keyword)).Returns(whileNode);
-            classUnderTest.Parse(tokeniser.Object);
-            classUnderTest.Tree.Should().Be(whileNode);
         }
     }
 

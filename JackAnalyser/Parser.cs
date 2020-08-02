@@ -20,23 +20,22 @@ namespace JackAnalyser
         public void Parse(ITokeniser tokeniser)
         {
             tokens = new List<Token>();
+            var queue = new Queue<Token>();
             Token token = tokeniser.GetNextToken();
             while (token != null)
             {
                 tokens.Add(token);
+                queue.Enqueue(token);
                 token = tokeniser.GetNextToken();
             }
-            Tree = nodeFactory.Get((KeywordToken)tokens.FirstOrDefault());
+            Tree = nodeFactory.Get(queue);
         }
+
+        public Token[] Tokens() => tokens.ToArray();
 
         public XDocument ToXml()
         {
             throw new NotImplementedException();
-        }
-
-        public Token[] Tokens()
-        {
-            return tokens.ToArray();
         }
 
         public XDocument TokensXml()
