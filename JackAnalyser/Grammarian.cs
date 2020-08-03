@@ -117,7 +117,7 @@ namespace JackAnalyser
             if (type != null)
                 parentNode.Children.Add(type);
             else
-                throw new ApplicationException("class variable definition expected a type");
+                throw new ApplicationException("class variable definition expected a type, reached end of file instead");
         }
 
         private void DequeueKeyword(BranchNode parentNode, Queue<Token> tokens)
@@ -132,7 +132,7 @@ namespace JackAnalyser
                 parentNode.Children.Add(identifier);
             else
             {
-                string suffix = identifier == null ? ", reached end of file instead" : $", got {identifier} instead";
+                string suffix = identifier == null ? ", reached end of file instead" : $", got '{identifier}' instead";
                 throw new ApplicationException(error + suffix);
             }
             return identifier;
@@ -140,12 +140,15 @@ namespace JackAnalyser
 
         private Token DequeueSymbol(BranchNode parentNode, Queue<Token> tokens, string symbol)
         {
-            Token symbolToken = Dequeue(tokens);
-            if (symbolToken is SymbolToken && symbolToken.Value == symbol)
-                parentNode.Children.Add(symbolToken);
+            Token token = Dequeue(tokens);
+            if (token is SymbolToken && token.Value == symbol)
+                parentNode.Children.Add(token);
             else
-                throw new ApplicationException($"expected symbol '{symbol}'");
-            return symbolToken;
+            {
+                string suffix = token == null ? "reached end of file instead" : $"got '{token}' instead";
+                throw new ApplicationException($"expected symbol '{symbol}', {suffix}");
+            }
+            return token;
         }
 
         private Token Dequeue(Queue<Token> tokens)

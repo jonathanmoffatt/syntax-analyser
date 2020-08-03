@@ -49,7 +49,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.Get(t1, t3, t4))
                 .Should().Throw<ApplicationException>()
-                .WithMessage("class expected a className identifier, got { instead");
+                .WithMessage("class expected a className identifier, got '{' instead");
         }
 
         [TestMethod]
@@ -58,7 +58,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.Get(t1, t2, t4))
                 .Should().Throw<ApplicationException>()
-                .WithMessage("expected symbol '{'");
+                .WithMessage("expected symbol '{', got '}' instead");
         }
 
         [TestMethod]
@@ -67,7 +67,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.Get(t1, t2, t3))
                 .Should().Throw<ApplicationException>()
-                .WithMessage("expected symbol '}'");
+                .WithMessage("expected symbol '}', reached end of file instead");
         }
 
         [TestMethod]
@@ -152,7 +152,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.Get(t1, t2, t3, cvd1))
                 .Should().Throw<ApplicationException>()
-                .WithMessage("class variable definition expected a type");
+                .WithMessage("class variable definition expected a type, reached end of file instead");
         }
 
         [TestMethod]
