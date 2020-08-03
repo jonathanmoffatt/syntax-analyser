@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -48,7 +49,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.Get(t1, t3, t4))
                 .Should().Throw<ApplicationException>()
-                .WithMessage("class expected a className identifier");
+                .WithMessage("class expected a className identifier, got { instead");
         }
 
         [TestMethod]
@@ -75,7 +76,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.Get(t1))
                 .Should().Throw<ApplicationException>()
-                .WithMessage("class expected a className identifier");
+                .WithMessage("class expected a className identifier, reached end of file instead");
         }
 
     }
@@ -160,7 +161,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.Get(t1, t2, t3, cvd1, cvd2))
                 .Should().Throw<ApplicationException>()
-                .WithMessage("class variable declaration expected a variable name");
+                .WithMessage("class variable declaration expected a variable name, reached end of file instead");
         }
     }
 
@@ -189,6 +190,16 @@ namespace JackAnalyser.Tests
         private IdentifierToken sd9;
         private SymbolToken sd10;
         private SymbolToken sd11;
+        private KeywordToken vd1;
+        private KeywordToken vd2;
+        private IdentifierToken vd3;
+        private SymbolToken vd4;
+        private IdentifierToken vd5;
+        private SymbolToken vd6;
+        private KeywordToken vd7;
+        private IdentifierToken vd8;
+        private IdentifierToken vd9;
+        private SymbolToken vd10;
         private SymbolToken sd12;
         private Token c4;
 
@@ -212,6 +223,16 @@ namespace JackAnalyser.Tests
             sd9 = new IdentifierToken("game");
             sd10 = new SymbolToken(")");
             sd11 = new SymbolToken("{");
+            vd1 = new KeywordToken("var");
+            vd2 = new KeywordToken("boolean");
+            vd3 = new IdentifierToken("hasStarted");
+            vd4 = new SymbolToken(",");
+            vd5 = new IdentifierToken("hasFinished");
+            vd6 = new SymbolToken(";");
+            vd7 = new KeywordToken("var");
+            vd8 = new IdentifierToken("Player");
+            vd9 = new IdentifierToken("player");
+            vd10 = new SymbolToken(";");
             sd12 = new SymbolToken("}");
             c4 = new SymbolToken("}");
             classUnderTest = mocker.CreateInstance<Grammarian>();
@@ -250,6 +271,21 @@ namespace JackAnalyser.Tests
         {
             BranchNode node = classUnderTest.Get(c1, c2, c3, sd1b, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4);
             node.Children[3].Should().BeOfType<SubroutineDeclarationNode>();
+        }
+
+        [TestMethod]
+        public void ShouldHandleVariableDeclarations()
+        {
+            BranchNode node = classUnderTest.Get(
+                c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11,
+                vd1, vd2, vd3, vd4, vd5, vd6, vd7, vd8, vd9, vd10,
+                sd12, c4);
+            var subroutineDeclaration = node.Children.First(c => c is SubroutineDeclarationNode) as SubroutineDeclarationNode;
+            var subroutineBody = subroutineDeclaration.Children.First(d => d is SubroutineBodyNode) as SubroutineBodyNode;
+            var variableDeclaration1 = subroutineBody.Children.First(c => c is VariableDeclarationNode) as VariableDeclarationNode;
+            var variableDeclaration2 = subroutineBody.Children.Last(c => c is VariableDeclarationNode) as VariableDeclarationNode;
+            variableDeclaration1.Children.Should().BeEquivalentTo(vd1, vd2, vd3, vd4, vd5, vd6);
+            variableDeclaration2.Children.Should().BeEquivalentTo(vd7, vd8, vd9, vd10);
         }
     }
 

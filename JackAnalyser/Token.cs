@@ -16,5 +16,10 @@ namespace JackAnalyser
         {
             return new XElement(ElementName, $" {Value} ");
         }
+
+        public override string ToString()
+        {
+            return Value;
+        }
     }
 }

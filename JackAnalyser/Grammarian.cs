@@ -88,7 +88,27 @@ namespace JackAnalyser
             var body = new SubroutineBodyNode();
             sd.Children.Add(body);
             DequeueSymbol(body, tokens, "{");
+            DequeueVariableDeclarations(body, tokens);
             DequeueSymbol(body, tokens, "}");
+        }
+
+        private void DequeueVariableDeclarations(SubroutineBodyNode body, Queue<Token> tokens)
+        {
+            while (Peek(tokens)?.Value == "var")
+            {
+                var variables = new VariableDeclarationNode();
+                body.Children.Add(variables);
+                DequeueKeyword(variables, tokens);
+                DequeueType(variables, tokens);
+                bool more;
+                do
+                {
+                    DequeueIdentifier(variables, tokens, "variable declarations expected an identifier");
+                    more = Peek(tokens)?.Value == ",";
+                    if (more) DequeueSymbol(variables, tokens, ",");
+                } while (more);
+                DequeueSymbol(variables, tokens, ";");
+            }
         }
 
         private void DequeueType(BranchNode parentNode, Queue<Token> tokens)
@@ -111,7 +131,10 @@ namespace JackAnalyser
             if (identifier is IdentifierToken)
                 parentNode.Children.Add(identifier);
             else
-                throw new ApplicationException(error);
+            {
+                string suffix = identifier == null ? ", reached end of file instead" : $", got {identifier} instead";
+                throw new ApplicationException(error + suffix);
+            }
             return identifier;
         }
 
