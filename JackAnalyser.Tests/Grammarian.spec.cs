@@ -14,10 +14,7 @@ namespace JackAnalyser.Tests
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token t1;
-        private Token t2;
-        private Token t3;
-        private Token t4;
+        private Token t1, t2, t3, t4;
 
         [TestInitialize]
         public void Setup()
@@ -90,17 +87,8 @@ namespace JackAnalyser.Tests
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token t1;
-        private Token t2;
-        private Token t3;
-        private Token t4;
-        private KeywordToken cvd1;
-        private KeywordToken cvd1a;
-        private KeywordToken cvd2;
-        private IdentifierToken cvd3;
-        private SymbolToken cvd4;
-        private IdentifierToken cvd5;
-        private SymbolToken cvd6;
+        private Token t1, t2, t3, t4;
+        private Token cvd1, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6;
 
         [TestInitialize]
         public void Setup()
@@ -174,34 +162,9 @@ namespace JackAnalyser.Tests
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token c1;
-        private Token c2;
-        private Token c3;
-        private KeywordToken sd1;
-        private KeywordToken sd1a;
-        private KeywordToken sd1b;
-        private KeywordToken sd2;
-        private IdentifierToken sd3;
-        private SymbolToken sd4;
-        private KeywordToken sd5;
-        private IdentifierToken sd6;
-        private SymbolToken sd7;
-        private IdentifierToken sd8;
-        private IdentifierToken sd9;
-        private SymbolToken sd10;
-        private SymbolToken sd11;
-        private KeywordToken vd1;
-        private KeywordToken vd2;
-        private IdentifierToken vd3;
-        private SymbolToken vd4;
-        private IdentifierToken vd5;
-        private SymbolToken vd6;
-        private KeywordToken vd7;
-        private IdentifierToken vd8;
-        private IdentifierToken vd9;
-        private SymbolToken vd10;
-        private SymbolToken sd12;
-        private Token c4;
+        private Token c1, c2, c3, c4;
+        private Token sd1, sd1a, sd1b, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12;
+        private Token vd1, vd2, vd3, vd4, vd5, vd6, vd7, vd8, vd9, vd10;
 
         [TestInitialize]
         public void Setup()
@@ -286,6 +249,57 @@ namespace JackAnalyser.Tests
             var variableDeclaration2 = subroutineBody.Children.Last(c => c is VariableDeclarationNode) as VariableDeclarationNode;
             variableDeclaration1.Children.Should().BeEquivalentTo(vd1, vd2, vd3, vd4, vd5, vd6);
             variableDeclaration2.Children.Should().BeEquivalentTo(vd7, vd8, vd9, vd10);
+        }
+    }
+
+    #endregion
+
+    #region LetStatementGrammar
+
+    [TestClass]
+    public class LetStatementGrammar
+    {
+        private Grammarian classUnderTest;
+        private AutoMocker mocker;
+        private Token c1, c2, c3, c4;
+        private Token sd1, sd2, sd3, sd4, sd5, sd6, sd7;
+        private Token ls1, ls2, ls3, ls4, ls5;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            mocker = new AutoMocker();
+            c1 = new KeywordToken("class");
+            c2 = new IdentifierToken("blah");
+            c3 = new SymbolToken("{");
+            sd1 = new KeywordToken("method");
+            sd2 = new KeywordToken("void");
+            sd3 = new IdentifierToken("doSomething");
+            sd4 = new SymbolToken("(");
+            sd5 = new SymbolToken(")");
+            sd6 = new SymbolToken("{");
+            ls1 = new KeywordToken("let");
+            ls2 = new IdentifierToken("x");
+            ls3 = new SymbolToken("=");
+            ls4 = new IntegerConstantToken("1234");
+            ls5 = new SymbolToken(";");
+            sd7 = new SymbolToken("}");
+            c4 = new SymbolToken("}");
+            classUnderTest = mocker.CreateInstance<Grammarian>();
+        }
+
+        [TestMethod]
+        public void WrapsStatementsInAStatementsNode()
+        {
+            BranchNode node = classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4);
+            SubroutineBodyNode body = node
+                .Children.Single(c => c is SubroutineDeclarationNode).As<SubroutineDeclarationNode>()
+                .Children.Single(c => c is SubroutineBodyNode).As<SubroutineBodyNode>();
+            body.Children.Should().Contain(n => n is StatementsNode);
+            StatementsNode statements = body.Children.Single(c => c is StatementsNode) as StatementsNode;
+            //StatementNode statement = statements.Children.Single() as StatementNode;
+            //statement.Should().NotBeNull();
+            //statement.Children.Should().BeEquivalentTo(ls1, ls2, ls3, ls4, ls5);
         }
     }
 
