@@ -5,6 +5,7 @@ namespace JackAnalyser
 {
     public class Grammarian : IGrammarian
     {
+        private Queue<Token> tokens;
 
         public BranchNode Get(params Token[] tokens)
         {
@@ -13,154 +14,155 @@ namespace JackAnalyser
 
         public BranchNode Get(Queue<Token> tokens)
         {
+            this.tokens = tokens;
             ClassNode root = new ClassNode();
-            root.Children.Add(tokens.Dequeue());
-            DequeueIdentifier(root, tokens, "class expected a className identifier");
-            DequeueSymbol(root, tokens, "{");
-            DequeueClassVariableDeclarations(root, tokens);
-            DequeueSubroutineDeclarations(root, tokens);
-            DequeueSymbol(root, tokens, "}");
+            root.Children.Add(Dequeue());
+            DequeueIdentifier(root, "class expected a className identifier");
+            DequeueSymbol(root, "{");
+            DequeueClassVariableDeclarations(root);
+            DequeueSubroutineDeclarations(root);
+            DequeueSymbol(root, "}");
             return root;
         }
 
-        private void DequeueClassVariableDeclarations(ClassNode root, Queue<Token> tokens)
+        private void DequeueClassVariableDeclarations(ClassNode root)
         {
-            while (Peek(tokens) == "static" || Peek(tokens) == "field")
+            while (Peek() == "static" || Peek() == "field")
             {
-                DequeueClassVariableDeclaration(root, tokens);
+                DequeueClassVariableDeclaration(root);
             }
         }
 
-        private void DequeueClassVariableDeclaration(ClassNode root, Queue<Token> tokens)
+        private void DequeueClassVariableDeclaration(ClassNode root)
         {
             var cvd = new ClassVariableDeclarationNode();
             root.Children.Add(cvd);
-            DequeueKeyword(cvd, tokens);
-            DequeueType(cvd, tokens);
+            DequeueKeyword(cvd);
+            DequeueType(cvd);
             bool another;
             do
             {
-                DequeueIdentifier(cvd, tokens, "class variable declaration expected a variable name");
-                another = Peek(tokens) == ",";
+                DequeueIdentifier(cvd, "class variable declaration expected a variable name");
+                another = Peek() == ",";
                 if (another) cvd.Children.Add(tokens.Dequeue());
             } while (another);
-            DequeueSymbol(cvd, tokens, ";");
+            DequeueSymbol(cvd, ";");
         }
 
-        private void DequeueSubroutineDeclarations(ClassNode root, Queue<Token> tokens)
+        private void DequeueSubroutineDeclarations(ClassNode root)
         {
-            while ((Peek(tokens)) == "constructor" || (Peek(tokens)) == "function" || (Peek(tokens)) == "method")
+            while ((Peek()) == "constructor" || (Peek()) == "function" || (Peek()) == "method")
             {
-                DequeueSubroutineDeclaration(root, tokens);
+                DequeueSubroutineDeclaration(root);
             }
         }
 
-        private void DequeueSubroutineDeclaration(ClassNode root, Queue<Token> tokens)
+        private void DequeueSubroutineDeclaration(ClassNode root)
         {
             var sd = new SubroutineDeclarationNode();
             root.Children.Add(sd);
-            DequeueKeyword(sd, tokens);
-            DequeueType(sd, tokens);
-            DequeueIdentifier(sd, tokens, "expected subroutine name");
-            DequeueSymbol(sd, tokens, "(");
-            if (Peek(tokens) != ")")
-                DequeueParameterList(sd, tokens);
-            DequeueSymbol(sd, tokens, ")");
-            DequeueSubroutineBody(sd, tokens);
+            DequeueKeyword(sd);
+            DequeueType(sd);
+            DequeueIdentifier(sd, "expected subroutine name");
+            DequeueSymbol(sd, "(");
+            if (Peek() != ")")
+                DequeueParameterList(sd);
+            DequeueSymbol(sd, ")");
+            DequeueSubroutineBody(sd);
         }
 
-        private void DequeueParameterList(SubroutineDeclarationNode sd, Queue<Token> tokens)
+        private void DequeueParameterList(SubroutineDeclarationNode sd)
         {
             var pl = new ParameterListNode();
             sd.Children.Add(pl);
             bool another;
             do
             {
-                DequeueType(pl, tokens);
-                DequeueIdentifier(pl, tokens, "expected parameter list identifier");
-                another = Peek(tokens) == ",";
-                if (another) DequeueSymbol(pl, tokens, ",");
+                DequeueType(pl);
+                DequeueIdentifier(pl, "expected parameter list identifier");
+                another = Peek() == ",";
+                if (another) DequeueSymbol(pl, ",");
             } while (another);
         }
 
-        private void DequeueSubroutineBody(SubroutineDeclarationNode sd, Queue<Token> tokens)
+        private void DequeueSubroutineBody(SubroutineDeclarationNode sd)
         {
             var body = new SubroutineBodyNode();
             sd.Children.Add(body);
-            DequeueSymbol(body, tokens, "{");
-            DequeueVariableDeclarations(body, tokens);
-            DequeueStatements(body, tokens);
-            DequeueSymbol(body, tokens, "}");
+            DequeueSymbol(body, "{");
+            DequeueVariableDeclarations(body);
+            DequeueStatements(body);
+            DequeueSymbol(body, "}");
         }
 
-        private void DequeueVariableDeclarations(SubroutineBodyNode body, Queue<Token> tokens)
+        private void DequeueVariableDeclarations(SubroutineBodyNode body)
         {
-            while (Peek(tokens) == "var")
+            while (Peek() == "var")
             {
                 var variables = new VariableDeclarationNode();
                 body.Children.Add(variables);
-                DequeueKeyword(variables, tokens);
-                DequeueType(variables, tokens);
+                DequeueKeyword(variables);
+                DequeueType(variables);
                 bool more;
                 do
                 {
-                    DequeueIdentifier(variables, tokens, "variable declarations expected an identifier");
-                    more = Peek(tokens) == ",";
-                    if (more) DequeueSymbol(variables, tokens, ",");
+                    DequeueIdentifier(variables, "variable declarations expected an identifier");
+                    more = Peek() == ",";
+                    if (more) DequeueSymbol(variables, ",");
                 } while (more);
-                DequeueSymbol(variables, tokens, ";");
+                DequeueSymbol(variables, ";");
             }
         }
 
-        private void DequeueStatements(SubroutineBodyNode body, Queue<Token> tokens)
+        private void DequeueStatements(SubroutineBodyNode body)
         {
-            if (Peek(tokens) != "}")
+            if (Peek() != "}")
             {
                 var statements = new StatementsNode();
                 body.Children.Add(statements);
-                while (Peek(tokens) != "}")
+                while (Peek() != "}")
                 {
-                    DequeueLetStatement(statements, tokens);
+                    DequeueLetStatement(statements);
                 }
             }
         }
 
-        private void DequeueLetStatement(StatementsNode parentNode, Queue<Token> tokens)
+        private void DequeueLetStatement(StatementsNode parentNode)
         {
-            if (Peek(tokens) == "let")
+            if (Peek() == "let")
             {
                 var statement = new LetStatementNode();
                 parentNode.Children.Add(statement);
-                DequeueKeyword(statement, tokens);
-                DequeueIdentifier(statement, tokens, "let statement expected an identifier");
-                DequeueSymbol(statement, tokens, "=");
-                DequeueExpression(statement, tokens, "let statement expected an expression");
-                DequeueSymbol(statement, tokens, ";");
+                DequeueKeyword(statement);
+                DequeueIdentifier(statement, "let statement expected an identifier");
+                DequeueSymbol(statement, "=");
+                DequeueExpression(statement, "let statement expected an expression");
+                DequeueSymbol(statement, ";");
             }
         }
 
-        private void DequeueExpression(BranchNode parentNode, Queue<Token> tokens, string error)
+        private void DequeueExpression(BranchNode parentNode, string error)
         {
-            parentNode.Children.Add(Dequeue(tokens));
+            parentNode.Children.Add(Dequeue());
         }
 
-        private void DequeueType(BranchNode parentNode, Queue<Token> tokens)
+        private void DequeueType(BranchNode parentNode)
         {
-            Token type = Dequeue(tokens);
+            Token type = Dequeue();
             if (type != null)
                 parentNode.Children.Add(type);
             else
                 throw new ApplicationException("class variable definition expected a type, reached end of file instead");
         }
 
-        private void DequeueKeyword(BranchNode parentNode, Queue<Token> tokens)
+        private void DequeueKeyword(BranchNode parentNode)
         {
             parentNode.Children.Add(tokens.Dequeue());
         }
 
-        private Token DequeueIdentifier(BranchNode parentNode, Queue<Token> tokens, string error)
+        private Token DequeueIdentifier(BranchNode parentNode, string error)
         {
-            Token identifier = Dequeue(tokens);
+            Token identifier = Dequeue();
             if (identifier is IdentifierToken)
                 parentNode.Children.Add(identifier);
             else
@@ -171,9 +173,9 @@ namespace JackAnalyser
             return identifier;
         }
 
-        private Token DequeueSymbol(BranchNode parentNode, Queue<Token> tokens, string symbol)
+        private Token DequeueSymbol(BranchNode parentNode, string symbol)
         {
-            Token token = Dequeue(tokens);
+            Token token = Dequeue();
             if (token is SymbolToken && token.Value == symbol)
                 parentNode.Children.Add(token);
             else
@@ -184,12 +186,12 @@ namespace JackAnalyser
             return token;
         }
 
-        private Token Dequeue(Queue<Token> tokens)
+        private Token Dequeue()
         {
             return tokens.Count > 0 ? tokens.Dequeue() : null;
         }
 
-        private string Peek(Queue<Token> tokens)
+        private string Peek()
         {
             return tokens.Count > 0 ? tokens.Peek().Value : null;
         }
