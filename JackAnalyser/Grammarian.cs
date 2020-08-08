@@ -143,7 +143,11 @@ namespace JackAnalyser
 
         private void DequeueExpression(BranchNode parentNode, string error)
         {
-            parentNode.Children.Add(Dequeue());
+            var expression = new ExpressionNode();
+            parentNode.Children.Add(expression);
+            var term = new TermNode();
+            expression.Children.Add(term);
+            term.Children.Add(Dequeue());
         }
 
         private void DequeueType(BranchNode parentNode)

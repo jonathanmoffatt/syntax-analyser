@@ -300,7 +300,7 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void RecognisesLetStatement()
+        public void RecognisesLetStatementWithSimpleExpression()
         {
             BranchNode node = classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4);
             StatementsNode statements = node
@@ -309,7 +309,13 @@ namespace JackAnalyser.Tests
                 .Children.Single(c => c is StatementsNode).As<StatementsNode>();
             LetStatementNode statement = statements.Children.Single() as LetStatementNode;
             statement.Should().NotBeNull();
-            statement.Children.Should().BeEquivalentTo(ls1, ls2, ls3, ls4, ls5);
+            statement.Children.Should().StartWith(new[] { ls1, ls2, ls3 });
+            var expression = statement.Children[3] as ExpressionNode;
+            expression.Should().NotBeNull();
+            var term = expression.Children.Single() as TermNode;
+            term.Should().NotBeNull();
+            term.Children.Single().Should().Be(ls4);
+            statement.Children.Last().Should().Be(ls5);
         }
     }
 
