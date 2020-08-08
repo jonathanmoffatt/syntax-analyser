@@ -120,10 +120,28 @@ namespace JackAnalyser
                 body.Children.Add(statements);
                 while (Peek(tokens) != "}")
                 {
-                    // TODO dequeue statement
-                    Dequeue(tokens);
+                    DequeueLetStatement(statements, tokens);
                 }
             }
+        }
+
+        private void DequeueLetStatement(StatementsNode parentNode, Queue<Token> tokens)
+        {
+            if (Peek(tokens) == "let")
+            {
+                var statement = new LetStatementNode();
+                parentNode.Children.Add(statement);
+                DequeueKeyword(statement, tokens);
+                DequeueIdentifier(statement, tokens, "let statement expected an identifier");
+                DequeueSymbol(statement, tokens, "=");
+                DequeueExpression(statement, tokens, "let statement expected an expression");
+                DequeueSymbol(statement, tokens, ";");
+            }
+        }
+
+        private void DequeueExpression(BranchNode parentNode, Queue<Token> tokens, string error)
+        {
+            parentNode.Children.Add(Dequeue(tokens));
         }
 
         private void DequeueType(BranchNode parentNode, Queue<Token> tokens)

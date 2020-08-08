@@ -297,9 +297,19 @@ namespace JackAnalyser.Tests
                 .Children.Single(c => c is SubroutineBodyNode).As<SubroutineBodyNode>();
             body.Children.Should().Contain(n => n is StatementsNode);
             StatementsNode statements = body.Children.Single(c => c is StatementsNode) as StatementsNode;
-            //StatementNode statement = statements.Children.Single() as StatementNode;
-            //statement.Should().NotBeNull();
-            //statement.Children.Should().BeEquivalentTo(ls1, ls2, ls3, ls4, ls5);
+        }
+
+        [TestMethod]
+        public void RecognisesLetStatement()
+        {
+            BranchNode node = classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4);
+            StatementsNode statements = node
+                .Children.Single(c => c is SubroutineDeclarationNode).As<SubroutineDeclarationNode>()
+                .Children.Single(c => c is SubroutineBodyNode).As<SubroutineBodyNode>()
+                .Children.Single(c => c is StatementsNode).As<StatementsNode>();
+            LetStatementNode statement = statements.Children.Single() as LetStatementNode;
+            statement.Should().NotBeNull();
+            statement.Children.Should().BeEquivalentTo(ls1, ls2, ls3, ls4, ls5);
         }
     }
 
