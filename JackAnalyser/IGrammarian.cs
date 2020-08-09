@@ -6,6 +6,7 @@ namespace JackAnalyser
     {
         IGrammarian LoadTokens(Queue<Token> tokens);
         ClassNode ParseClass();
+        ClassVariableDeclarationNode ParseClassVariableDeclaration();
         SubroutineDeclarationNode ParseSubroutineDeclaration();
     }
 }

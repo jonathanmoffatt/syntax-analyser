@@ -99,17 +99,12 @@ namespace JackAnalyser.Tests
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token t1, t2, t3, t4;
         private Token cvd1, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6;
 
         [TestInitialize]
         public void Setup()
         {
             mocker = new AutoMocker();
-            t1 = new KeywordToken("class");
-            t2 = new IdentifierToken("blah");
-            t3 = new SymbolToken("{");
-            t4 = new SymbolToken("}");
             cvd1 = new KeywordToken("static");
             cvd1a = new KeywordToken("field");
             cvd2 = new KeywordToken("boolean");
@@ -124,13 +119,9 @@ namespace JackAnalyser.Tests
         public void RecognisesStaticClassVariableDeclaration()
         {
             classUnderTest
-                .LoadTokens(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, t4)
-                .ParseClass()
+                .LoadTokens(cvd1, cvd2, cvd3, cvd4, cvd5, cvd6)
+                .ParseClassVariableDeclaration()
                 .ShouldGenerateXml(@"
-                <class>
-                  <keyword>class</keyword>
-                  <identifier>blah</identifier>
-                  <symbol>{</symbol>
                   <classVarDec>
                     <keyword>static</keyword>
                     <keyword>boolean</keyword>
@@ -139,30 +130,16 @@ namespace JackAnalyser.Tests
                     <identifier>hasFinished</identifier>
                     <symbol>;</symbol>
                   </classVarDec>
-                  <symbol>}</symbol>
-                </class>
             ");
         }
 
         [TestMethod]
-        public void RecognisesMultipleClassVariableDeclarations()
+        public void RecognisesFieldClassVariableDeclarations()
         {
             classUnderTest
-                .LoadTokens(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6, t4)
-                .ParseClass()
+                .LoadTokens(cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6)
+                .ParseClassVariableDeclaration()
                 .ShouldGenerateXml(@"
-                <class>
-                  <keyword>class</keyword>
-                  <identifier>blah</identifier>
-                  <symbol>{</symbol>
-                  <classVarDec>
-                    <keyword>static</keyword>
-                    <keyword>boolean</keyword>
-                    <identifier>hasStarted</identifier>
-                    <symbol>,</symbol>
-                    <identifier>hasFinished</identifier>
-                    <symbol>;</symbol>
-                  </classVarDec>
                   <classVarDec>
                     <keyword>field</keyword>
                     <keyword>boolean</keyword>
@@ -171,17 +148,15 @@ namespace JackAnalyser.Tests
                     <identifier>hasFinished</identifier>
                     <symbol>;</symbol>
                   </classVarDec>
-                  <symbol>}</symbol>
-                </class>
             ");
         }
 
         [TestMethod]
         public void ThrowsExceptionIfClassVariableDefinitionTypeMissing()
         {
-            classUnderTest.LoadTokens(t1, t2, t3, cvd1);
+            classUnderTest.LoadTokens(cvd1);
             classUnderTest
-                .Invoking(c => c.ParseClass())
+                .Invoking(c => c.ParseClassVariableDeclaration())
                 .Should().Throw<ApplicationException>()
                 .WithMessage("class variable definition expected a type, reached end of file instead");
         }
@@ -189,9 +164,9 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ThrowsExceptionIfClassVariableDefinitionVariableNameMissing()
         {
-            classUnderTest.LoadTokens(t1, t2, t3, cvd1, cvd2);
+            classUnderTest.LoadTokens(cvd1, cvd2);
             classUnderTest
-                .Invoking(c => c.ParseClass())
+                .Invoking(c => c.ParseClassVariableDeclaration())
                 .Should().Throw<ApplicationException>()
                 .WithMessage("class variable declaration expected a variable name, reached end of file instead");
         }
@@ -505,7 +480,7 @@ namespace JackAnalyser.Tests
             t12 = new SymbolToken("}");
             t13 = new KeywordToken("else");
             t14 = new SymbolToken("{");
-            t15 = new SymbolToken("{");
+            t15 = new SymbolToken("}");
         }
 
 

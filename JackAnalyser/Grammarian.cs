@@ -25,10 +25,32 @@ namespace JackAnalyser
             root.Children.Add(Dequeue());
             DequeueIdentifier(root, "class expected a className identifier");
             DequeueSymbol(root, "{");
-            DequeueClassVariableDeclarations(root);
-            DequeueSubroutineDeclarations(root);
+            while (Peek() == "static" || Peek() == "field")
+            {
+                root.Children.Add(ParseClassVariableDeclaration());
+            }
+            while (Peek() == "constructor" || Peek() == "function" || Peek() == "method")
+            {
+                root.Children.Add(ParseSubroutineDeclaration());
+            }
             DequeueSymbol(root, "}");
             return root;
+        }
+
+        public ClassVariableDeclarationNode ParseClassVariableDeclaration()
+        {
+            var cvd = new ClassVariableDeclarationNode();
+            DequeueKeyword(cvd);
+            DequeueType(cvd);
+            bool another;
+            do
+            {
+                DequeueIdentifier(cvd, "class variable declaration expected a variable name");
+                another = Peek() == ",";
+                if (another) cvd.Children.Add(tokens.Dequeue());
+            } while (another);
+            DequeueSymbol(cvd, ";");
+            return cvd;
         }
 
         public SubroutineDeclarationNode ParseSubroutineDeclaration()
@@ -58,38 +80,6 @@ namespace JackAnalyser
                 DequeueSymbol(statement, ";");
             }
             return statement;
-        }
-
-        private void DequeueClassVariableDeclarations(ClassNode parent)
-        {
-            while (Peek() == "static" || Peek() == "field")
-            {
-                parent.Children.Add(DequeueClassVariableDeclaration());
-            }
-        }
-
-        private ClassVariableDeclarationNode DequeueClassVariableDeclaration()
-        {
-            var cvd = new ClassVariableDeclarationNode();
-            DequeueKeyword(cvd);
-            DequeueType(cvd);
-            bool another;
-            do
-            {
-                DequeueIdentifier(cvd, "class variable declaration expected a variable name");
-                another = Peek() == ",";
-                if (another) cvd.Children.Add(tokens.Dequeue());
-            } while (another);
-            DequeueSymbol(cvd, ";");
-            return cvd;
-        }
-
-        private void DequeueSubroutineDeclarations(ClassNode parent)
-        {
-            while ((Peek()) == "constructor" || (Peek()) == "function" || (Peek()) == "method")
-            {
-                parent.Children.Add(ParseSubroutineDeclaration());
-            }
         }
 
         private void DequeueParameterList(SubroutineDeclarationNode sd)
