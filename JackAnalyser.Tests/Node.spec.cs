@@ -49,15 +49,15 @@ namespace JackAnalyser.Tests
         public void NestsChildrenUnderTheElement()
         {
             var root = new ClassNode();
-            root.Children.Add(new KeywordToken("class"));
-            root.Children.Add(new IdentifierToken("Game"));
-            root.Children.Add(new SymbolToken("{"));
+            root.AddChild(new KeywordToken("class"));
+            root.AddChild(new IdentifierToken("Game"));
+            root.AddChild(new SymbolToken("{"));
             var variables = new ClassVariableDeclarationNode();
-            root.Children.Add(variables);
-            variables.Children.Add(new KeywordToken("field"));
-            variables.Children.Add(new KeywordToken("int"));
-            variables.Children.Add(new IdentifierToken("direction"));
-            variables.Children.Add(new SymbolToken(";"));
+            root.AddChild(variables);
+            variables.AddChild(new KeywordToken("field"));
+            variables.AddChild(new KeywordToken("int"));
+            variables.AddChild(new IdentifierToken("direction"));
+            variables.AddChild(new SymbolToken(";"));
             root.ToXml().ToString().Should().Be(
 @"<class>
   <keyword>class</keyword>

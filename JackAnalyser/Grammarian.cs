@@ -22,16 +22,16 @@ namespace JackAnalyser
         public ClassNode ParseClass()
         {
             ClassNode root = new ClassNode();
-            root.Children.Add(Dequeue());
+            root.AddChild(Dequeue());
             DequeueIdentifier(root, "class expected a className identifier");
             DequeueSymbol(root, "{");
             while (Peek() == "static" || Peek() == "field")
             {
-                root.Children.Add(ParseClassVariableDeclaration());
+                root.AddChild(ParseClassVariableDeclaration());
             }
             while (Peek() == "constructor" || Peek() == "function" || Peek() == "method")
             {
-                root.Children.Add(ParseSubroutineDeclaration());
+                root.AddChild(ParseSubroutineDeclaration());
             }
             DequeueSymbol(root, "}");
             return root;
@@ -47,7 +47,7 @@ namespace JackAnalyser
             {
                 DequeueIdentifier(cvd, "class variable declaration expected a variable name");
                 another = Peek() == ",";
-                if (another) cvd.Children.Add(tokens.Dequeue());
+                if (another) cvd.AddChild(tokens.Dequeue());
             } while (another);
             DequeueSymbol(cvd, ";");
             return cvd;
@@ -113,8 +113,7 @@ namespace JackAnalyser
 
         private void DequeueParameterList(SubroutineDeclarationNode sd)
         {
-            var pl = new ParameterListNode();
-            sd.Children.Add(pl);
+            var pl = sd.AddChild(new ParameterListNode());
             bool another;
             do
             {
@@ -127,8 +126,7 @@ namespace JackAnalyser
 
         private void DequeueSubroutineBody(SubroutineDeclarationNode sd)
         {
-            var body = new SubroutineBodyNode();
-            sd.Children.Add(body);
+            var body = sd.AddChild(new SubroutineBodyNode());
             DequeueSymbol(body, "{");
             DequeueVariableDeclarations(body);
             DequeueStatements(body);
@@ -139,8 +137,7 @@ namespace JackAnalyser
         {
             while (Peek() == "var")
             {
-                var variables = new VariableDeclarationNode();
-                body.Children.Add(variables);
+                var variables = body.AddChild(new VariableDeclarationNode());
                 DequeueKeyword(variables);
                 DequeueType(variables);
                 bool more;
@@ -158,27 +155,19 @@ namespace JackAnalyser
         {
             if (Peek() != "}")
             {
-                var statements = new StatementsNode();
-                parent.Children.Add(statements);
+                var statements = parent.AddChild(new StatementsNode());
                 while (Peek() != "}")
                 {
-                    LetStatementNode let = ParseLetStatement();
-                    if (let != null)
-                        statements.Children.Add(let);
-                    IfStatementNode ifStatement = ParseIfStatement();
-                    if (ifStatement != null)
-                        statements.Children.Add(ifStatement);
-                    ReturnStatementNode returnStatement = ParseReturnStatement();
-                    if (returnStatement != null)
-                        statements.Children.Add(returnStatement);
+                    statements.AddChild(ParseLetStatement());
+                    statements.AddChild(ParseIfStatement());
+                    statements.AddChild(ParseReturnStatement());
                 }
             }
         }
 
         private void DequeueExpression(BranchNode parent, string error)
         {
-            var expression = new ExpressionNode();
-            parent.Children.Add(expression);
+            var expression = parent.AddChild(new ExpressionNode());
             DequeueTerm(expression);
             while (IsOperator(Peek()))
             {
@@ -189,8 +178,7 @@ namespace JackAnalyser
 
         private void DequeueTerm(BranchNode parent)
         {
-            var term = new TermNode();
-            parent.Children.Add(term);
+            var term = parent.AddChild(new TermNode());
             if (IsUnaryOperator(Peek()))
             {
                 DequeueSymbol(term, Peek());
@@ -204,7 +192,7 @@ namespace JackAnalyser
             }
             else
             {
-                term.Children.Add(Dequeue());
+                term.AddChild(Dequeue());
                 if (Peek() == "[")
                 {
                     DequeueSymbol(term, "[");
@@ -218,14 +206,14 @@ namespace JackAnalyser
         {
             Token type = Dequeue();
             if (type != null)
-                parent.Children.Add(type);
+                parent.AddChild(type);
             else
                 throw new ApplicationException("class variable definition expected a type, reached end of file instead");
         }
 
         private void DequeueKeyword(BranchNode parent)
         {
-            parent.Children.Add(tokens.Dequeue());
+            parent.AddChild(tokens.Dequeue());
         }
 
         private Token DequeueIdentifier(BranchNode parent, string error)
@@ -233,7 +221,7 @@ namespace JackAnalyser
             Token identifier = Dequeue();
             if (identifier is IdentifierToken)
             {
-                parent.Children.Add(identifier);
+                parent.AddChild(identifier);
                 if (Peek() == "[")
                 {
                     DequeueSymbol(parent, "[");
@@ -253,7 +241,7 @@ namespace JackAnalyser
         {
             Token token = Dequeue();
             if (token is SymbolToken && token.Value == symbol)
-                parent.Children.Add(token);
+                parent.AddChild(token);
             else
             {
                 string suffix = token == null ? "reached end of file instead" : $"got '{token}' instead";
