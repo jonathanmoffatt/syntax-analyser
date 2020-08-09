@@ -111,6 +111,20 @@ namespace JackAnalyser
             return statement;
         }
 
+        public WhileStatementNode ParseWhileStatement()
+        {
+            if (Peek() != "while") return null;
+            var statement = new WhileStatementNode();
+            DequeueKeyword(statement);
+            DequeueSymbol(statement, "(");
+            DequeueExpression(statement, "while statement expected an expression");
+            DequeueSymbol(statement, ")");
+            DequeueSymbol(statement, "{");
+            DequeueStatements(statement);
+            DequeueSymbol(statement, "}");
+            return statement;
+        }
+
         private void DequeueParameterList(SubroutineDeclarationNode sd)
         {
             var pl = sd.AddChild(new ParameterListNode());
@@ -161,6 +175,7 @@ namespace JackAnalyser
                     statements.AddChild(ParseLetStatement());
                     statements.AddChild(ParseIfStatement());
                     statements.AddChild(ParseReturnStatement());
+                    statements.AddChild(ParseWhileStatement());
                 }
             }
         }

@@ -22,18 +22,16 @@ namespace JackAnalyser.Tests
     public class ClassGrammar
     {
         private Grammarian classUnderTest;
-        private AutoMocker mocker;
         private Token t1, t2, t3, t4;
 
         [TestInitialize]
         public void Setup()
         {
-            mocker = new AutoMocker();
             t1 = new KeywordToken("class");
             t2 = new IdentifierToken("blah");
             t3 = new SymbolToken("{");
             t4 = new SymbolToken("}");
-            classUnderTest = mocker.CreateInstance<Grammarian>();
+            classUnderTest = new Grammarian();
         }
 
         [TestMethod]
@@ -98,13 +96,11 @@ namespace JackAnalyser.Tests
     public class ClassVariableDeclarationGrammar
     {
         private Grammarian classUnderTest;
-        private AutoMocker mocker;
         private Token cvd1, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6;
 
         [TestInitialize]
         public void Setup()
         {
-            mocker = new AutoMocker();
             cvd1 = new KeywordToken("static");
             cvd1a = new KeywordToken("field");
             cvd2 = new KeywordToken("boolean");
@@ -112,7 +108,7 @@ namespace JackAnalyser.Tests
             cvd4 = new SymbolToken(",");
             cvd5 = new IdentifierToken("hasFinished");
             cvd6 = new SymbolToken(";");
-            classUnderTest = mocker.CreateInstance<Grammarian>();
+            classUnderTest = new Grammarian();
         }
 
         [TestMethod]
@@ -180,14 +176,12 @@ namespace JackAnalyser.Tests
     public class SubroutineDeclarationGrammar
     {
         private Grammarian classUnderTest;
-        private AutoMocker mocker;
         private Token sd1, sd1a, sd1b, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12;
         private Token vd1, vd2, vd3, vd4, vd5, vd6, vd7, vd8, vd9, vd10;
 
         [TestInitialize]
         public void Setup()
         {
-            mocker = new AutoMocker();
             sd1 = new KeywordToken("constructor");
             sd1a = new KeywordToken("function");
             sd1b = new KeywordToken("method");
@@ -212,7 +206,7 @@ namespace JackAnalyser.Tests
             vd9 = new IdentifierToken("player");
             vd10 = new SymbolToken(";");
             sd12 = new SymbolToken("}");
-            classUnderTest = mocker.CreateInstance<Grammarian>();
+            classUnderTest = new Grammarian();
         }
 
         [TestMethod]
@@ -350,13 +344,11 @@ namespace JackAnalyser.Tests
     public class SimpleLetStatementGrammar
     {
         private Grammarian classUnderTest;
-        private AutoMocker mocker;
 
         [TestInitialize]
         public void Setup()
         {
-            mocker = new AutoMocker();
-            classUnderTest = mocker.CreateInstance<Grammarian>();
+            classUnderTest = new Grammarian();
             Token ls1 = new KeywordToken("let");
             Token ls2 = new IdentifierToken("x");
             Token ls3 = new SymbolToken("=");
@@ -392,12 +384,10 @@ namespace JackAnalyser.Tests
     public class ComplexLetStatementGrammar
     {
         private Grammarian classUnderTest;
-        private AutoMocker mocker;
 
         [TestInitialize]
         public void Setup()
         {
-            mocker = new AutoMocker();
             Token cls1 = new KeywordToken("let");
             Token cls2 = new IdentifierToken("y");
             Token cls3 = new SymbolToken("[");
@@ -409,7 +399,7 @@ namespace JackAnalyser.Tests
             Token cls9 = new SymbolToken("~");
             Token cls10 = new IdentifierToken("finished");
             Token cls11 = new SymbolToken(";");
-            classUnderTest = mocker.CreateInstance<Grammarian>();
+            classUnderTest = new Grammarian();
             classUnderTest.LoadTokens(cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11);
         }
 
@@ -499,20 +489,19 @@ namespace JackAnalyser.Tests
     }
 
     #endregion
+
     #region IfStatementGrammar
 
     [TestClass]
     public class IfStatementGrammar
     {
         private Grammarian classUnderTest;
-        private AutoMocker mocker;
         private Token t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20;
 
         [TestInitialize]
         public void Setup()
         {
-            mocker = new AutoMocker();
-            classUnderTest = mocker.CreateInstance<Grammarian>();
+            classUnderTest = new Grammarian();
             t1 = new KeywordToken("if");
             t2 = new SymbolToken("(");
             t3 = new SymbolToken("(");
@@ -628,6 +617,66 @@ namespace JackAnalyser.Tests
                 </statements>
                 <symbol>}</symbol>
               </ifStatement>
+            ");
+        }
+    }
+
+    #endregion
+
+    #region WhileStatementGrammar
+
+    [TestClass]
+    public class WhileStatementGrammar
+    {
+        private Grammarian classUnderTest;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            classUnderTest = new Grammarian();
+            var t1 = new KeywordToken("while");
+            var t2 = new SymbolToken("(");
+            var t3 = new IdentifierToken("inProgress");
+            var t4 = new SymbolToken(")");
+            var t5 = new SymbolToken("{");
+            var t6 = new KeywordToken("let");
+            var t7 = new IdentifierToken("x");
+            var t8 = new SymbolToken("=");
+            var t9 = new IdentifierToken("y");
+            var t10 = new SymbolToken(";");
+            var t11 = new SymbolToken("}");
+            classUnderTest.LoadTokens(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11);
+        }
+
+        [TestMethod]
+        public void ParsesCorrectly()
+        {
+            classUnderTest.ParseWhileStatement().ShouldGenerateXml(@"
+                <whileStatement>
+                  <keyword>while</keyword>
+                  <symbol>(</symbol>
+                  <expression>
+                    <term>
+                        <identifier>inProgress</identifier>
+                    </term>
+                  </expression>
+                <symbol>)</symbol>
+                <symbol>{</symbol>
+                <statements>
+                    <letStatement>
+                        <keyword>let</keyword>
+                        <identifier>x</identifier>
+                        <symbol>=</symbol>
+                        <expression>
+                            <term>
+                                <identifier>y</identifier>
+                            </term>
+                        </expression>
+                        <symbol>;</symbol>
+                    </letStatement>
+                </statements>
+                <symbol>}</symbol>
+              </whileStatement>
             ");
         }
     }
