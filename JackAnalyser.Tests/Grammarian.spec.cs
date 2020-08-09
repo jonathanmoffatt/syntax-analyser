@@ -351,24 +351,23 @@ namespace JackAnalyser.Tests
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token ls1, ls2, ls3, ls4, ls5;
 
         [TestInitialize]
         public void Setup()
         {
             mocker = new AutoMocker();
-            ls1 = new KeywordToken("let");
-            ls2 = new IdentifierToken("x");
-            ls3 = new SymbolToken("=");
-            ls4 = new IntegerConstantToken("1234");
-            ls5 = new SymbolToken(";");
             classUnderTest = mocker.CreateInstance<Grammarian>();
+            Token ls1 = new KeywordToken("let");
+            Token ls2 = new IdentifierToken("x");
+            Token ls3 = new SymbolToken("=");
+            Token ls4 = new IntegerConstantToken("1234");
+            Token ls5 = new SymbolToken(";");
+            classUnderTest.LoadTokens(ls1, ls2, ls3, ls4, ls5);
         }
 
         [TestMethod]
         public void RecognisesLetStatementWithSimpleExpression()
         {
-            classUnderTest.LoadTokens(ls1, ls2, ls3, ls4, ls5);
             classUnderTest.ParseLetStatement().ShouldGenerateXml(@"
                         <letStatement>
                           <keyword>let</keyword>
@@ -394,30 +393,29 @@ namespace JackAnalyser.Tests
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11;
 
         [TestInitialize]
         public void Setup()
         {
             mocker = new AutoMocker();
-            cls1 = new KeywordToken("let");
-            cls2 = new IdentifierToken("y");
-            cls3 = new SymbolToken("[");
-            cls4 = new IdentifierToken("x");
-            cls5 = new SymbolToken("+");
-            cls6 = new IntegerConstantToken("1");
-            cls7 = new SymbolToken("]");
-            cls8 = new SymbolToken("=");
-            cls9 = new SymbolToken("~");
-            cls10 = new IdentifierToken("finished");
-            cls11 = new SymbolToken(";");
+            Token cls1 = new KeywordToken("let");
+            Token cls2 = new IdentifierToken("y");
+            Token cls3 = new SymbolToken("[");
+            Token cls4 = new IdentifierToken("x");
+            Token cls5 = new SymbolToken("+");
+            Token cls6 = new IntegerConstantToken("1");
+            Token cls7 = new SymbolToken("]");
+            Token cls8 = new SymbolToken("=");
+            Token cls9 = new SymbolToken("~");
+            Token cls10 = new IdentifierToken("finished");
+            Token cls11 = new SymbolToken(";");
             classUnderTest = mocker.CreateInstance<Grammarian>();
+            classUnderTest.LoadTokens(cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11);
         }
 
         [TestMethod]
         public void RecognisesLetStatementWithMoreComplexExpression()
         {
-            classUnderTest.LoadTokens(cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11);
             classUnderTest.ParseLetStatement()
                 .ShouldGenerateXml(@"
                             <letStatement>
@@ -451,6 +449,56 @@ namespace JackAnalyser.Tests
 
     #endregion
 
+    #region ReturnStatementGrammar
+
+    [TestClass]
+    public class ReturnStatementGrammar
+    {
+        private Grammarian classUnderTest;
+        private Token t1, t2, t3;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            classUnderTest = new Grammarian();
+            t1 = new KeywordToken("return");
+            t2 = new IdentifierToken("result");
+            t3 = new SymbolToken(";");
+        }
+
+        [TestMethod]
+        public void ShouldParseCorrectlyWithNoReturnValue()
+        {
+            classUnderTest.LoadTokens(t1, t3)
+                .ParseReturnStatement()
+                .ShouldGenerateXml(@"
+                    <returnStatement>
+                        <keyword>return</keyword>
+                        <symbol>;</symbol>
+                    </returnStatement>
+                ");
+        }
+
+        [TestMethod]
+        public void ShouldParseCorrectlyWithReturnExpression()
+        {
+            classUnderTest.LoadTokens(t1, t2, t3)
+                .ParseReturnStatement()
+                .ShouldGenerateXml(@"
+                    <returnStatement>
+                        <keyword>return</keyword>
+                        <expression>
+                            <term>
+                                <identifier>result</identifier>
+                            </term>
+                        </expression>
+                        <symbol>;</symbol>
+                    </returnStatement>
+                ");
+        }
+    }
+
+    #endregion
     #region IfStatementGrammar
 
     [TestClass]
@@ -458,14 +506,13 @@ namespace JackAnalyser.Tests
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15;
+        private Token t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20;
 
         [TestInitialize]
         public void Setup()
         {
             mocker = new AutoMocker();
             classUnderTest = mocker.CreateInstance<Grammarian>();
-
             t1 = new KeywordToken("if");
             t2 = new SymbolToken("(");
             t3 = new SymbolToken("(");
@@ -477,13 +524,112 @@ namespace JackAnalyser.Tests
             t9 = new IntegerConstantToken("30");
             t10 = new SymbolToken(")");
             t11 = new SymbolToken("{");
-            t12 = new SymbolToken("}");
-            t13 = new KeywordToken("else");
-            t14 = new SymbolToken("{");
-            t15 = new SymbolToken("}");
+            t12 = new KeywordToken("return");
+            t13 = new SymbolToken(";");
+            t14 = new SymbolToken("}");
+            t15 = new KeywordToken("else");
+            t16 = new SymbolToken("{");
+            t17 = new KeywordToken("return");
+            t18 = new IdentifierToken("result");
+            t19 = new SymbolToken(";");
+            t20 = new SymbolToken("}");
         }
 
+        [TestMethod]
+        public void ParsesCorrectlyWithoutAnElseBlock()
+        {
+            classUnderTest.LoadTokens(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14);
+            IfStatementNode node = classUnderTest.ParseIfStatement();
+            Console.WriteLine(node.ToXml());
+            node.ShouldGenerateXml(@"
+                <ifStatement>
+                  <keyword>if</keyword>
+                  <symbol>(</symbol>
+                  <expression>
+                    <term>
+                        <symbol>(</symbol>
+                        <expression>
+                            <term>
+                                <identifier>x</identifier>
+                            </term>
+                            <symbol>*</symbol>
+                            <term>
+                                <integerConstant>5</integerConstant>
+                            </term>
+                        </expression>
+                        <symbol>)</symbol>
+                    </term>
+                    <symbol>&gt;</symbol>
+                    <term>
+                        <integerConstant>30</integerConstant>
+                    </term>
+                </expression>
+                <symbol>)</symbol>
+                <symbol>{</symbol>
+                <statements>
+                    <returnStatement>
+                      <keyword>return</keyword>
+                      <symbol>;</symbol>
+                    </returnStatement>
+                </statements>
+                <symbol>}</symbol>
+              </ifStatement>
+            ");
+        }
 
+        [TestMethod]
+        public void ParsesCorrectlyWithAnElseBlock()
+        {
+            classUnderTest.LoadTokens(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15, t16, t17, t18, t19, t20);
+            classUnderTest.ParseIfStatement().ShouldGenerateXml(@"
+                <ifStatement>
+                  <keyword>if</keyword>
+                  <symbol>(</symbol>
+                  <expression>
+                    <term>
+                        <symbol>(</symbol>
+                        <expression>
+                            <term>
+                                <identifier>x</identifier>
+                            </term>
+                            <symbol>*</symbol>
+                            <term>
+                                <integerConstant>5</integerConstant>
+                            </term>
+                        </expression>
+                        <symbol>)</symbol>
+                    </term>
+                    <symbol>&gt;</symbol>
+                    <term>
+                        <integerConstant>30</integerConstant>
+                    </term>
+                </expression>
+                <symbol>)</symbol>
+                <symbol>{</symbol>
+                <statements>
+                    <returnStatement>
+                      <keyword>return</keyword>
+                      <symbol>;</symbol>
+                    </returnStatement>
+                </statements>
+                <symbol>}</symbol>
+                <keyword>else</keyword>
+                <symbol>{</symbol>
+                <statements>
+                    <returnStatement>
+                        <keyword>return</keyword>
+                        <expression>
+                            <term>
+                                <identifier>result</identifier>
+                            </term>
+                        </expression>
+                        <symbol>;</symbol>
+                    </returnStatement>
+                </statements>
+                <symbol>}</symbol>
+              </ifStatement>
+            ");
+        }
     }
 
     #endregion

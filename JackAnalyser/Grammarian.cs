@@ -69,16 +69,45 @@ namespace JackAnalyser
 
         public LetStatementNode ParseLetStatement()
         {
-            LetStatementNode statement = null;
-            if (Peek() == "let")
+            if (Peek() != "let") return null;
+            var statement = new LetStatementNode();
+            DequeueKeyword(statement);
+            DequeueIdentifier(statement, "let statement expected an identifier");
+            DequeueSymbol(statement, "=");
+            DequeueExpression(statement, "let statement expected an expression");
+            DequeueSymbol(statement, ";");
+            return statement;
+        }
+
+        public IfStatementNode ParseIfStatement()
+        {
+            if (Peek() != "if") return null;
+            var statement = new IfStatementNode();
+            DequeueKeyword(statement);
+            DequeueSymbol(statement, "(");
+            DequeueExpression(statement, "if statement expected an expression");
+            DequeueSymbol(statement, ")");
+            DequeueSymbol(statement, "{");
+            DequeueStatements(statement);
+            DequeueSymbol(statement, "}");
+            if (Peek() == "else")
             {
-                statement = new LetStatementNode();
                 DequeueKeyword(statement);
-                DequeueIdentifier(statement, "let statement expected an identifier");
-                DequeueSymbol(statement, "=");
-                DequeueExpression(statement, "let statement expected an expression");
-                DequeueSymbol(statement, ";");
+                DequeueSymbol(statement, "{");
+                DequeueStatements(statement);
+                DequeueSymbol(statement, "}");
             }
+            return statement;
+        }
+
+        public ReturnStatementNode ParseReturnStatement()
+        {
+            if (Peek() != "return") return null;
+            var statement = new ReturnStatementNode();
+            DequeueKeyword(statement);
+            if (Peek() != ";")
+                DequeueExpression(statement, "return statement expected an expression");
+            DequeueSymbol(statement, ";");
             return statement;
         }
 
@@ -125,17 +154,23 @@ namespace JackAnalyser
             }
         }
 
-        private void DequeueStatements(SubroutineBodyNode body)
+        private void DequeueStatements(BranchNode parent)
         {
             if (Peek() != "}")
             {
                 var statements = new StatementsNode();
-                body.Children.Add(statements);
+                parent.Children.Add(statements);
                 while (Peek() != "}")
                 {
                     LetStatementNode let = ParseLetStatement();
                     if (let != null)
                         statements.Children.Add(let);
+                    IfStatementNode ifStatement = ParseIfStatement();
+                    if (ifStatement != null)
+                        statements.Children.Add(ifStatement);
+                    ReturnStatementNode returnStatement = ParseReturnStatement();
+                    if (returnStatement != null)
+                        statements.Children.Add(returnStatement);
                 }
             }
         }
@@ -145,7 +180,7 @@ namespace JackAnalyser
             var expression = new ExpressionNode();
             parent.Children.Add(expression);
             DequeueTerm(expression);
-            while(IsOperator(Peek()))
+            while (IsOperator(Peek()))
             {
                 DequeueSymbol(expression, Peek());
                 DequeueTerm(expression);
@@ -153,13 +188,19 @@ namespace JackAnalyser
         }
 
         private void DequeueTerm(BranchNode parent)
-        { 
+        {
             var term = new TermNode();
             parent.Children.Add(term);
             if (IsUnaryOperator(Peek()))
             {
                 DequeueSymbol(term, Peek());
                 DequeueTerm(term);
+            }
+            else if (Peek() == "(")
+            {
+                DequeueSymbol(term, "(");
+                DequeueExpression(term, "term expected expression after '('");
+                DequeueSymbol(term, ")");
             }
             else
             {
