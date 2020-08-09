@@ -127,12 +127,12 @@ namespace JackAnalyser
             }
         }
 
-        private void DequeueLetStatement(StatementsNode parentNode)
+        private void DequeueLetStatement(StatementsNode parent)
         {
             if (Peek() == "let")
             {
                 var statement = new LetStatementNode();
-                parentNode.Children.Add(statement);
+                parent.Children.Add(statement);
                 DequeueKeyword(statement);
                 DequeueIdentifier(statement, "let statement expected an identifier");
                 DequeueSymbol(statement, "=");
@@ -141,34 +141,66 @@ namespace JackAnalyser
             }
         }
 
-        private void DequeueExpression(BranchNode parentNode, string error)
+        private void DequeueExpression(BranchNode parent, string error)
         {
             var expression = new ExpressionNode();
-            parentNode.Children.Add(expression);
-            var term = new TermNode();
-            expression.Children.Add(term);
-            term.Children.Add(Dequeue());
+            parent.Children.Add(expression);
+            DequeueTerm(expression);
+            while(IsOperator(Peek()))
+            {
+                DequeueSymbol(expression, Peek());
+                DequeueTerm(expression);
+            }
         }
 
-        private void DequeueType(BranchNode parentNode)
+        private void DequeueTerm(BranchNode parent)
+        { 
+            var term = new TermNode();
+            parent.Children.Add(term);
+            if (IsUnaryOperator(Peek()))
+            {
+                DequeueSymbol(term, Peek());
+                DequeueTerm(term);
+            }
+            else
+            {
+                term.Children.Add(Dequeue());
+                if (Peek() == "[")
+                {
+                    DequeueSymbol(term, "[");
+                    DequeueExpression(term, "term expected expression");
+                    DequeueSymbol(term, "]");
+                }
+            }
+        }
+
+        private void DequeueType(BranchNode parent)
         {
             Token type = Dequeue();
             if (type != null)
-                parentNode.Children.Add(type);
+                parent.Children.Add(type);
             else
                 throw new ApplicationException("class variable definition expected a type, reached end of file instead");
         }
 
-        private void DequeueKeyword(BranchNode parentNode)
+        private void DequeueKeyword(BranchNode parent)
         {
-            parentNode.Children.Add(tokens.Dequeue());
+            parent.Children.Add(tokens.Dequeue());
         }
 
-        private Token DequeueIdentifier(BranchNode parentNode, string error)
+        private Token DequeueIdentifier(BranchNode parent, string error)
         {
             Token identifier = Dequeue();
             if (identifier is IdentifierToken)
-                parentNode.Children.Add(identifier);
+            {
+                parent.Children.Add(identifier);
+                if (Peek() == "[")
+                {
+                    DequeueSymbol(parent, "[");
+                    DequeueExpression(parent, "expected expression");
+                    DequeueSymbol(parent, "]");
+                }
+            }
             else
             {
                 string suffix = identifier == null ? ", reached end of file instead" : $", got '{identifier}' instead";
@@ -177,11 +209,11 @@ namespace JackAnalyser
             return identifier;
         }
 
-        private Token DequeueSymbol(BranchNode parentNode, string symbol)
+        private Token DequeueSymbol(BranchNode parent, string symbol)
         {
             Token token = Dequeue();
             if (token is SymbolToken && token.Value == symbol)
-                parentNode.Children.Add(token);
+                parent.Children.Add(token);
             else
             {
                 string suffix = token == null ? "reached end of file instead" : $"got '{token}' instead";
@@ -198,6 +230,16 @@ namespace JackAnalyser
         private string Peek()
         {
             return tokens.Count > 0 ? tokens.Peek().Value : null;
+        }
+
+        private bool IsOperator(string s)
+        {
+            return s != null && "+-*/&|<>=".Contains(s);
+        }
+
+        private bool IsUnaryOperator(string s)
+        {
+            return s != null && (s == "-" || s == "~");
         }
     }
 }

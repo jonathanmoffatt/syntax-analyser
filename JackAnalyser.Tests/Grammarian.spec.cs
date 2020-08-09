@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Xml.Linq;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
@@ -7,6 +8,14 @@ using Moq.AutoMock;
 
 namespace JackAnalyser.Tests
 {
+    internal static class NodeTestExtensions
+    {
+        public static void ShouldGenerateXml(this Node node, string expectedXml)
+        {
+            node.ToXml().Should().BeEquivalentTo(XElement.Parse(expectedXml));
+        }
+    }
+
     #region ClassGrammar
 
     [TestClass]
@@ -30,14 +39,13 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ReturnsAClassNode()
         {
-            classUnderTest.Get(t1, t2, t3, t4).Should().BeOfType<ClassNode>();
-        }
-
-        [TestMethod]
-        public void IncludesChildTokens()
-        {
-            BranchNode node = classUnderTest.Get(t1, t2, t3, t4);
-            node.Children.Should().BeEquivalentTo(t1, t2, t3, t4);
+            classUnderTest.Get(t1, t2, t3, t4).ShouldGenerateXml(@"
+                <class>
+                  <keyword>class</keyword>
+                  <identifier>blah</identifier>
+                  <symbol>{</symbol>
+                  <symbol>}</symbol>
+                </class>");
         }
 
         [TestMethod]
@@ -111,27 +119,51 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void RecognisesStaticClassVariableDeclaration()
         {
-            BranchNode node = classUnderTest.Get(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, t4);
-            node.Children[3].Should().BeOfType<ClassVariableDeclarationNode>();
-            ((ClassVariableDeclarationNode)node.Children[3]).Children.Should().BeEquivalentTo(cvd1, cvd2, cvd3, cvd4, cvd5, cvd6);
-        }
-
-        [TestMethod]
-        public void RecognisesFieldClassVariableDeclaration()
-        {
-            BranchNode node = classUnderTest.Get(t1, t2, t3, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6, t4);
-            node.Children[3].Should().BeOfType<ClassVariableDeclarationNode>();
-            ((ClassVariableDeclarationNode)node.Children[3]).Children.Should().BeEquivalentTo(cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6);
+            classUnderTest.Get(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, t4).ShouldGenerateXml(@"
+                <class>
+                  <keyword>class</keyword>
+                  <identifier>blah</identifier>
+                  <symbol>{</symbol>
+                  <classVarDec>
+                    <keyword>static</keyword>
+                    <keyword>boolean</keyword>
+                    <identifier>hasStarted</identifier>
+                    <symbol>,</symbol>
+                    <identifier>hasFinished</identifier>
+                    <symbol>;</symbol>
+                  </classVarDec>
+                  <symbol>}</symbol>
+                </class>
+            ");
         }
 
         [TestMethod]
         public void RecognisesMultipleClassVariableDeclarations()
         {
-            BranchNode node = classUnderTest.Get(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6, t4);
-            node.Children[3].Should().BeOfType<ClassVariableDeclarationNode>();
-            ((ClassVariableDeclarationNode)node.Children[3]).Children.Should().BeEquivalentTo(cvd1, cvd2, cvd3, cvd4, cvd5, cvd6);
-            node.Children[4].Should().BeOfType<ClassVariableDeclarationNode>();
-            ((ClassVariableDeclarationNode)node.Children[4]).Children.Should().BeEquivalentTo(cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6);
+            classUnderTest.Get(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6, t4).ShouldGenerateXml(@"
+                <class>
+                  <keyword>class</keyword>
+                  <identifier>blah</identifier>
+                  <symbol>{</symbol>
+                  <classVarDec>
+                    <keyword>static</keyword>
+                    <keyword>boolean</keyword>
+                    <identifier>hasStarted</identifier>
+                    <symbol>,</symbol>
+                    <identifier>hasFinished</identifier>
+                    <symbol>;</symbol>
+                  </classVarDec>
+                  <classVarDec>
+                    <keyword>field</keyword>
+                    <keyword>boolean</keyword>
+                    <identifier>hasStarted</identifier>
+                    <symbol>,</symbol>
+                    <identifier>hasFinished</identifier>
+                    <symbol>;</symbol>
+                  </classVarDec>
+                  <symbol>}</symbol>
+                </class>
+            ");
         }
 
         [TestMethod]
@@ -204,51 +236,142 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ReturnsASubroutineDeclaration()
         {
-            BranchNode node = classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4);
-            SubroutineDeclarationNode subroutineDeclaration = node.Children[3] as SubroutineDeclarationNode;
-            subroutineDeclaration.Should().NotBeNull();
-            var children = subroutineDeclaration.Children;
-            children[0].Should().Be(sd1);
-            children[1].Should().Be(sd2);
-            children[2].Should().Be(sd3);
-            children[3].Should().Be(sd4);
-            children[4].Should().BeOfType<ParameterListNode>();
-            children[5].Should().Be(sd10);
-            children[6].Should().BeOfType<SubroutineBodyNode>();
-            children.Should().HaveCount(7);
-            var parameterList = (ParameterListNode)children[4];
-            parameterList.Children.Should().BeEquivalentTo(sd5, sd6, sd7, sd8, sd9);
-            var body = (SubroutineBodyNode)children[6];
-            body.Children.Should().BeEquivalentTo(sd11, sd12);
+            classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4).ShouldGenerateXml(@"
+                <class>
+                  <keyword>class</keyword>
+                  <identifier>blah</identifier>
+                  <symbol>{</symbol>
+                  <subroutineDec>
+                    <keyword>constructor</keyword>
+                    <keyword>void</keyword>
+                    <identifier>doSomething</identifier>
+                    <symbol>(</symbol>
+                    <parameterList>
+                      <keyword>int</keyword>
+                      <identifier>x</identifier>
+                      <symbol>,</symbol>
+                      <identifier>Game</identifier>
+                      <identifier>game</identifier>
+                    </parameterList>
+                    <symbol>)</symbol>
+                    <subroutineBody>
+                      <symbol>{</symbol>
+                      <symbol>}</symbol>
+                    </subroutineBody>
+                  </subroutineDec>
+                  <symbol>}</symbol>
+                </class>
+            ");
         }
 
         [TestMethod]
         public void ShouldHandleFunctionSubroutines()
         {
-            BranchNode node = classUnderTest.Get(c1, c2, c3, sd1a, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4);
-            node.Children[3].Should().BeOfType<SubroutineDeclarationNode>();
+            classUnderTest.Get(c1, c2, c3, sd1a, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4).ShouldGenerateXml(@"
+                <class>
+                  <keyword>class</keyword>
+                  <identifier>blah</identifier>
+                  <symbol>{</symbol>
+                  <subroutineDec>
+                    <keyword>function</keyword>
+                    <keyword>void</keyword>
+                    <identifier>doSomething</identifier>
+                    <symbol>(</symbol>
+                    <parameterList>
+                      <keyword>int</keyword>
+                      <identifier>x</identifier>
+                      <symbol>,</symbol>
+                      <identifier>Game</identifier>
+                      <identifier>game</identifier>
+                    </parameterList>
+                    <symbol>)</symbol>
+                    <subroutineBody>
+                      <symbol>{</symbol>
+                      <symbol>}</symbol>
+                    </subroutineBody>
+                  </subroutineDec>
+                  <symbol>}</symbol>
+                </class>
+            ");
         }
 
         [TestMethod]
         public void ShouldHandleMethodSubroutines()
         {
-            BranchNode node = classUnderTest.Get(c1, c2, c3, sd1b, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4);
-            node.Children[3].Should().BeOfType<SubroutineDeclarationNode>();
+            classUnderTest.Get(c1, c2, c3, sd1b, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4).ShouldGenerateXml(@"
+                <class>
+                  <keyword>class</keyword>
+                  <identifier>blah</identifier>
+                  <symbol>{</symbol>
+                  <subroutineDec>
+                    <keyword>method</keyword>
+                    <keyword>void</keyword>
+                    <identifier>doSomething</identifier>
+                    <symbol>(</symbol>
+                    <parameterList>
+                      <keyword>int</keyword>
+                      <identifier>x</identifier>
+                      <symbol>,</symbol>
+                      <identifier>Game</identifier>
+                      <identifier>game</identifier>
+                    </parameterList>
+                    <symbol>)</symbol>
+                    <subroutineBody>
+                      <symbol>{</symbol>
+                      <symbol>}</symbol>
+                    </subroutineBody>
+                  </subroutineDec>
+                  <symbol>}</symbol>
+                </class>
+            ");
         }
 
         [TestMethod]
         public void ShouldHandleVariableDeclarations()
         {
-            BranchNode node = classUnderTest.Get(
+            classUnderTest.Get(
                 c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11,
                 vd1, vd2, vd3, vd4, vd5, vd6, vd7, vd8, vd9, vd10,
-                sd12, c4);
-            var subroutineDeclaration = node.Children.First(c => c is SubroutineDeclarationNode) as SubroutineDeclarationNode;
-            var subroutineBody = subroutineDeclaration.Children.First(d => d is SubroutineBodyNode) as SubroutineBodyNode;
-            var variableDeclaration1 = subroutineBody.Children.First(c => c is VariableDeclarationNode) as VariableDeclarationNode;
-            var variableDeclaration2 = subroutineBody.Children.Last(c => c is VariableDeclarationNode) as VariableDeclarationNode;
-            variableDeclaration1.Children.Should().BeEquivalentTo(vd1, vd2, vd3, vd4, vd5, vd6);
-            variableDeclaration2.Children.Should().BeEquivalentTo(vd7, vd8, vd9, vd10);
+                sd12, c4).ShouldGenerateXml(@"
+                    <class>
+                      <keyword>class</keyword>
+                      <identifier>blah</identifier>
+                      <symbol>{</symbol>
+                      <subroutineDec>
+                        <keyword>constructor</keyword>
+                        <keyword>void</keyword>
+                        <identifier>doSomething</identifier>
+                        <symbol>(</symbol>
+                        <parameterList>
+                          <keyword>int</keyword>
+                          <identifier>x</identifier>
+                          <symbol>,</symbol>
+                          <identifier>Game</identifier>
+                          <identifier>game</identifier>
+                        </parameterList>
+                        <symbol>)</symbol>
+                        <subroutineBody>
+                          <symbol>{</symbol>
+                          <varDec>
+                            <keyword>var</keyword>
+                            <keyword>boolean</keyword>
+                            <identifier>hasStarted</identifier>
+                            <symbol>,</symbol>
+                            <identifier>hasFinished</identifier>
+                            <symbol>;</symbol>
+                          </varDec>
+                          <varDec>
+                            <keyword>var</keyword>
+                            <identifier>Player</identifier>
+                            <identifier>player</identifier>
+                            <symbol>;</symbol>
+                          </varDec>
+                          <symbol>}</symbol>
+                        </subroutineBody>
+                      </subroutineDec>
+                      <symbol>}</symbol>
+                    </class>
+            ");
         }
     }
 
@@ -264,6 +387,7 @@ namespace JackAnalyser.Tests
         private Token c1, c2, c3, c4;
         private Token sd1, sd2, sd3, sd4, sd5, sd6, sd7;
         private Token ls1, ls2, ls3, ls4, ls5;
+        private Token cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11;
 
         [TestInitialize]
         public void Setup()
@@ -283,6 +407,17 @@ namespace JackAnalyser.Tests
             ls3 = new SymbolToken("=");
             ls4 = new IntegerConstantToken("1234");
             ls5 = new SymbolToken(";");
+            cls1 = new KeywordToken("let");
+            cls2 = new IdentifierToken("y");
+            cls3 = new SymbolToken("[");
+            cls4 = new IdentifierToken("x");
+            cls5 = new SymbolToken("+");
+            cls6 = new IntegerConstantToken("1");
+            cls7 = new SymbolToken("]");
+            cls8 = new SymbolToken("=");
+            cls9 = new SymbolToken("~");
+            cls10 = new IdentifierToken("finished");
+            cls11 = new SymbolToken(";");
             sd7 = new SymbolToken("}");
             c4 = new SymbolToken("}");
             classUnderTest = mocker.CreateInstance<Grammarian>();
@@ -291,32 +426,165 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void WrapsStatementsInAStatementsNode()
         {
-            BranchNode node = classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4);
-            SubroutineBodyNode body = node
-                .Children.Single(c => c is SubroutineDeclarationNode).As<SubroutineDeclarationNode>()
-                .Children.Single(c => c is SubroutineBodyNode).As<SubroutineBodyNode>();
-            body.Children.Should().Contain(n => n is StatementsNode);
-            StatementsNode statements = body.Children.Single(c => c is StatementsNode) as StatementsNode;
+            classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4).ShouldGenerateXml(@"
+                <class>
+                  <keyword>class</keyword>
+                  <identifier>blah</identifier>
+                  <symbol>{</symbol>
+                  <subroutineDec>
+                    <keyword>method</keyword>
+                    <keyword>void</keyword>
+                    <identifier>doSomething</identifier>
+                    <symbol>(</symbol>
+                    <symbol>)</symbol>
+                    <subroutineBody>
+                      <symbol>{</symbol>
+                      <statements>
+                        <letStatement>
+                          <keyword>let</keyword>
+                          <identifier>x</identifier>
+                          <symbol>=</symbol>
+                          <expression>
+                            <term>
+                              <integerConstant>1234</integerConstant>
+                            </term>
+                          </expression>
+                          <symbol>;</symbol>
+                        </letStatement>
+                      </statements>
+                      <symbol>}</symbol>
+                    </subroutineBody>
+                  </subroutineDec>
+                  <symbol>}</symbol>
+                </class>
+            ");
         }
 
         [TestMethod]
         public void RecognisesLetStatementWithSimpleExpression()
         {
-            BranchNode node = classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4);
-            StatementsNode statements = node
-                .Children.Single(c => c is SubroutineDeclarationNode).As<SubroutineDeclarationNode>()
-                .Children.Single(c => c is SubroutineBodyNode).As<SubroutineBodyNode>()
-                .Children.Single(c => c is StatementsNode).As<StatementsNode>();
-            LetStatementNode statement = statements.Children.Single() as LetStatementNode;
-            statement.Should().NotBeNull();
-            statement.Children.Should().StartWith(new[] { ls1, ls2, ls3 });
-            var expression = statement.Children[3] as ExpressionNode;
-            expression.Should().NotBeNull();
-            var term = expression.Children.Single() as TermNode;
-            term.Should().NotBeNull();
-            term.Children.Single().Should().Be(ls4);
-            statement.Children.Last().Should().Be(ls5);
+            classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4).ShouldGenerateXml(@"
+                <class>
+                  <keyword>class</keyword>
+                  <identifier>blah</identifier>
+                  <symbol>{</symbol>
+                  <subroutineDec>
+                    <keyword>method</keyword>
+                    <keyword>void</keyword>
+                    <identifier>doSomething</identifier>
+                    <symbol>(</symbol>
+                    <symbol>)</symbol>
+                    <subroutineBody>
+                      <symbol>{</symbol>
+                      <statements>
+                        <letStatement>
+                          <keyword>let</keyword>
+                          <identifier>x</identifier>
+                          <symbol>=</symbol>
+                          <expression>
+                            <term>
+                              <integerConstant>1234</integerConstant>
+                            </term>
+                          </expression>
+                          <symbol>;</symbol>
+                        </letStatement>
+                      </statements>
+                      <symbol>}</symbol>
+                    </subroutineBody>
+                  </subroutineDec>
+                  <symbol>}</symbol>
+                </class>
+            ");
         }
+
+        [TestMethod]
+        public void RecognisesLetStatementWithMoreComplexExpression()
+        {
+            classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11, sd7, c4)
+                .ShouldGenerateXml(@"
+                    <class>
+                      <keyword>class</keyword>
+                      <identifier>blah</identifier>
+                      <symbol>{</symbol>
+                      <subroutineDec>
+                        <keyword>method</keyword>
+                        <keyword>void</keyword>
+                        <identifier>doSomething</identifier>
+                        <symbol>(</symbol>
+                        <symbol>)</symbol>
+                        <subroutineBody>
+                          <symbol>{</symbol>
+                          <statements>
+                            <letStatement>
+                              <keyword>let</keyword>
+                              <identifier>y</identifier>
+                              <symbol>[</symbol>
+                              <expression>
+                                <term>
+                                  <identifier>x</identifier>
+                                </term>
+                                <symbol>+</symbol>
+                                <term>
+                                  <integerConstant>1</integerConstant>
+                                </term>
+                              </expression>
+                              <symbol>]</symbol>
+                              <symbol>=</symbol>
+                              <expression>
+                                <term>
+                                  <symbol>~</symbol>
+                                  <term>
+                                    <identifier>finished</identifier>
+                                  </term>
+                                </term>
+                              </expression>
+                              <symbol>;</symbol>
+                            </letStatement>
+                          </statements>
+                          <symbol>}</symbol>
+                        </subroutineBody>
+                      </subroutineDec>
+                      <symbol>}</symbol>
+                    </class>
+                ");
+        }
+    }
+
+    #endregion
+
+    #region IfStatementGrammar
+
+    [TestClass]
+    public class IfStatementGrammar
+    {
+        private Grammarian classUnderTest;
+        private AutoMocker mocker;
+        private Token t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            mocker = new AutoMocker();
+            classUnderTest = mocker.CreateInstance<Grammarian>();
+
+            t1 = new KeywordToken("if");
+            t2 = new SymbolToken("(");
+            t3 = new SymbolToken("(");
+            t4 = new IdentifierToken("x");
+            t5 = new SymbolToken("*");
+            t6 = new IntegerConstantToken("5");
+            t7 = new SymbolToken(")");
+            t8 = new SymbolToken(">");
+            t9 = new IntegerConstantToken("30");
+            t10 = new SymbolToken(")");
+            t11 = new SymbolToken("{");
+            t12 = new SymbolToken("}");
+            t13 = new KeywordToken("else");
+            t14 = new SymbolToken("{");
+            t15 = new SymbolToken("{");
+        }
+
+
     }
 
     #endregion

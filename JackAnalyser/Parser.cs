@@ -8,13 +8,13 @@ namespace JackAnalyser
     public class Parser
     {
         private List<Token> tokens;
-        private readonly IGrammarian nodeFactory;
+        private readonly IGrammarian grammarian;
 
         public BranchNode Tree { get; set; }
 
-        public Parser(IGrammarian nodeFactory)
+        public Parser(IGrammarian grammarian)
         {
-            this.nodeFactory = nodeFactory;
+            this.grammarian = grammarian;
         }
 
         public void Parse(ITokeniser tokeniser)
@@ -28,15 +28,12 @@ namespace JackAnalyser
                 queue.Enqueue(token);
                 token = tokeniser.GetNextToken();
             }
-            Tree = nodeFactory.Get(queue);
+            Tree = grammarian.Get(queue);
         }
 
         public Token[] Tokens() => tokens.ToArray();
 
-        public XDocument ToXml()
-        {
-            throw new NotImplementedException();
-        }
+        public XDocument ToXml() => new XDocument(Tree.ToXml());
 
         public XDocument TokensXml()
         {

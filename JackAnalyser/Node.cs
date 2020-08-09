@@ -10,7 +10,7 @@ namespace JackAnalyser
         public XElement ToXml()
         {
             if (this is Token t)
-                return new XElement(ElementName, $" {t.Value} ");
+                return new XElement(ElementName, t.Value);// $" {t.Value} ");
             if (this is BranchNode b)
                 return new XElement(ElementName, b.Children.Select(c => c.ToXml()));
             return null;

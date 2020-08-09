@@ -38,7 +38,7 @@ namespace JackAnalyser
         private static void SaveXml(string sourceFile, XDocument xml, bool isTokens)
         {
             string fileName = GetOutputFileName(sourceFile, isTokens ? "T" : "");
-            XmlWriter xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings
+            using var xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings
             {
                 OmitXmlDeclaration = true,
                 Indent = true,

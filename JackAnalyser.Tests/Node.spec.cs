@@ -17,9 +17,9 @@ namespace JackAnalyser.Tests
         }
 
         [TestMethod]
-        public void PopulatesXmlElementWithTheValueOfTheTokenWithPadding()
+        public void SetsValueXmlElementToValueOfToken()
         {
-            new SymbolToken(")").ToXml().Value.Should().Be(" ) ");
+            new SymbolToken(")").ToXml().Value.Should().Be(")");
         }
 
         [TestMethod]
@@ -60,14 +60,14 @@ namespace JackAnalyser.Tests
             variables.Children.Add(new SymbolToken(";"));
             root.ToXml().ToString().Should().Be(
 @"<class>
-  <keyword> class </keyword>
-  <identifier> Game </identifier>
-  <symbol> { </symbol>
+  <keyword>class</keyword>
+  <identifier>Game</identifier>
+  <symbol>{</symbol>
   <classVarDec>
-    <keyword> field </keyword>
-    <keyword> int </keyword>
-    <identifier> direction </identifier>
-    <symbol> ; </symbol>
+    <keyword>field</keyword>
+    <keyword>int</keyword>
+    <identifier>direction</identifier>
+    <symbol>;</symbol>
   </classVarDec>
 </class>"
 );
