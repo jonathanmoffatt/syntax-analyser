@@ -39,7 +39,7 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ReturnsAClassNode()
         {
-            classUnderTest.Get(t1, t2, t3, t4).ShouldGenerateXml(@"
+            classUnderTest.LoadTokens(t1, t2, t3, t4).ParseClass().ShouldGenerateXml(@"
                 <class>
                   <keyword>class</keyword>
                   <identifier>blah</identifier>
@@ -51,8 +51,9 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ThrowsExceptionIfClassIsMissingClassName()
         {
+            classUnderTest.LoadTokens(t1, t3, t4);
             classUnderTest
-                .Invoking(c => c.Get(t1, t3, t4))
+                .Invoking(c => c.ParseClass())
                 .Should().Throw<ApplicationException>()
                 .WithMessage("class expected a className identifier, got '{' instead");
         }
@@ -60,8 +61,9 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ThrowsExceptionIfClassIsMissingOpeningBrace()
         {
+            classUnderTest.LoadTokens(t1, t2, t4);
             classUnderTest
-                .Invoking(c => c.Get(t1, t2, t4))
+                .Invoking(c => c.ParseClass())
                 .Should().Throw<ApplicationException>()
                 .WithMessage("expected symbol '{', got '}' instead");
         }
@@ -69,8 +71,9 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ThrowsExceptionIfClassIsMissingClosingBrace()
         {
+            classUnderTest.LoadTokens(t1, t2, t3);
             classUnderTest
-                .Invoking(c => c.Get(t1, t2, t3))
+                .Invoking(c => c.ParseClass())
                 .Should().Throw<ApplicationException>()
                 .WithMessage("expected symbol '}', reached end of file instead");
         }
@@ -78,8 +81,9 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ThrowsExceptionIfClassIsMissingEverything()
         {
+            classUnderTest.LoadTokens(t1);
             classUnderTest
-                .Invoking(c => c.Get(t1))
+                .Invoking(c => c.ParseClass())
                 .Should().Throw<ApplicationException>()
                 .WithMessage("class expected a className identifier, reached end of file instead");
         }
@@ -119,7 +123,10 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void RecognisesStaticClassVariableDeclaration()
         {
-            classUnderTest.Get(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, t4).ShouldGenerateXml(@"
+            classUnderTest
+                .LoadTokens(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, t4)
+                .ParseClass()
+                .ShouldGenerateXml(@"
                 <class>
                   <keyword>class</keyword>
                   <identifier>blah</identifier>
@@ -140,7 +147,10 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void RecognisesMultipleClassVariableDeclarations()
         {
-            classUnderTest.Get(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6, t4).ShouldGenerateXml(@"
+            classUnderTest
+                .LoadTokens(t1, t2, t3, cvd1, cvd2, cvd3, cvd4, cvd5, cvd6, cvd1a, cvd2, cvd3, cvd4, cvd5, cvd6, t4)
+                .ParseClass()
+                .ShouldGenerateXml(@"
                 <class>
                   <keyword>class</keyword>
                   <identifier>blah</identifier>
@@ -169,8 +179,9 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ThrowsExceptionIfClassVariableDefinitionTypeMissing()
         {
+            classUnderTest.LoadTokens(t1, t2, t3, cvd1);
             classUnderTest
-                .Invoking(c => c.Get(t1, t2, t3, cvd1))
+                .Invoking(c => c.ParseClass())
                 .Should().Throw<ApplicationException>()
                 .WithMessage("class variable definition expected a type, reached end of file instead");
         }
@@ -178,8 +189,9 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ThrowsExceptionIfClassVariableDefinitionVariableNameMissing()
         {
+            classUnderTest.LoadTokens(t1, t2, t3, cvd1, cvd2);
             classUnderTest
-                .Invoking(c => c.Get(t1, t2, t3, cvd1, cvd2))
+                .Invoking(c => c.ParseClass())
                 .Should().Throw<ApplicationException>()
                 .WithMessage("class variable declaration expected a variable name, reached end of file instead");
         }
@@ -194,7 +206,6 @@ namespace JackAnalyser.Tests
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token c1, c2, c3, c4;
         private Token sd1, sd1a, sd1b, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12;
         private Token vd1, vd2, vd3, vd4, vd5, vd6, vd7, vd8, vd9, vd10;
 
@@ -202,9 +213,6 @@ namespace JackAnalyser.Tests
         public void Setup()
         {
             mocker = new AutoMocker();
-            c1 = new KeywordToken("class");
-            c2 = new IdentifierToken("blah");
-            c3 = new SymbolToken("{");
             sd1 = new KeywordToken("constructor");
             sd1a = new KeywordToken("function");
             sd1b = new KeywordToken("method");
@@ -229,49 +237,44 @@ namespace JackAnalyser.Tests
             vd9 = new IdentifierToken("player");
             vd10 = new SymbolToken(";");
             sd12 = new SymbolToken("}");
-            c4 = new SymbolToken("}");
             classUnderTest = mocker.CreateInstance<Grammarian>();
         }
 
         [TestMethod]
         public void ReturnsASubroutineDeclaration()
         {
-            classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4).ShouldGenerateXml(@"
-                <class>
-                  <keyword>class</keyword>
-                  <identifier>blah</identifier>
-                  <symbol>{</symbol>
-                  <subroutineDec>
+            classUnderTest
+                .LoadTokens(sd1, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12)
+                .ParseSubroutineDeclaration()
+                .ShouldGenerateXml(@"
+                <subroutineDec>
                     <keyword>constructor</keyword>
                     <keyword>void</keyword>
                     <identifier>doSomething</identifier>
                     <symbol>(</symbol>
                     <parameterList>
-                      <keyword>int</keyword>
-                      <identifier>x</identifier>
-                      <symbol>,</symbol>
-                      <identifier>Game</identifier>
-                      <identifier>game</identifier>
+                        <keyword>int</keyword>
+                        <identifier>x</identifier>
+                        <symbol>,</symbol>
+                        <identifier>Game</identifier>
+                        <identifier>game</identifier>
                     </parameterList>
                     <symbol>)</symbol>
                     <subroutineBody>
-                      <symbol>{</symbol>
-                      <symbol>}</symbol>
+                        <symbol>{</symbol>
+                        <symbol>}</symbol>
                     </subroutineBody>
-                  </subroutineDec>
-                  <symbol>}</symbol>
-                </class>
+                </subroutineDec>
             ");
         }
 
         [TestMethod]
         public void ShouldHandleFunctionSubroutines()
         {
-            classUnderTest.Get(c1, c2, c3, sd1a, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4).ShouldGenerateXml(@"
-                <class>
-                  <keyword>class</keyword>
-                  <identifier>blah</identifier>
-                  <symbol>{</symbol>
+            classUnderTest
+                .LoadTokens(sd1a, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12)
+                .ParseSubroutineDeclaration()
+                .ShouldGenerateXml(@"
                   <subroutineDec>
                     <keyword>function</keyword>
                     <keyword>void</keyword>
@@ -290,19 +293,16 @@ namespace JackAnalyser.Tests
                       <symbol>}</symbol>
                     </subroutineBody>
                   </subroutineDec>
-                  <symbol>}</symbol>
-                </class>
             ");
         }
 
         [TestMethod]
         public void ShouldHandleMethodSubroutines()
         {
-            classUnderTest.Get(c1, c2, c3, sd1b, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12, c4).ShouldGenerateXml(@"
-                <class>
-                  <keyword>class</keyword>
-                  <identifier>blah</identifier>
-                  <symbol>{</symbol>
+            classUnderTest
+                .LoadTokens(sd1b, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, sd12)
+                .ParseSubroutineDeclaration()
+                .ShouldGenerateXml(@"
                   <subroutineDec>
                     <keyword>method</keyword>
                     <keyword>void</keyword>
@@ -321,22 +321,16 @@ namespace JackAnalyser.Tests
                       <symbol>}</symbol>
                     </subroutineBody>
                   </subroutineDec>
-                  <symbol>}</symbol>
-                </class>
             ");
         }
 
         [TestMethod]
         public void ShouldHandleVariableDeclarations()
         {
-            classUnderTest.Get(
-                c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11,
-                vd1, vd2, vd3, vd4, vd5, vd6, vd7, vd8, vd9, vd10,
-                sd12, c4).ShouldGenerateXml(@"
-                    <class>
-                      <keyword>class</keyword>
-                      <identifier>blah</identifier>
-                      <symbol>{</symbol>
+            classUnderTest
+                .LoadTokens(sd1, sd2, sd3, sd4, sd5, sd6, sd7, sd8, sd9, sd10, sd11, vd1, vd2, vd3, vd4, vd5, vd6, vd7, vd8, vd9, vd10, sd12)
+                .ParseSubroutineDeclaration()
+                .ShouldGenerateXml(@"
                       <subroutineDec>
                         <keyword>constructor</keyword>
                         <keyword>void</keyword>
@@ -369,44 +363,68 @@ namespace JackAnalyser.Tests
                           <symbol>}</symbol>
                         </subroutineBody>
                       </subroutineDec>
-                      <symbol>}</symbol>
-                    </class>
             ");
         }
     }
 
     #endregion
 
-    #region LetStatementGrammar
+    #region SimpleLetStatementGrammar
 
     [TestClass]
-    public class LetStatementGrammar
+    public class SimpleLetStatementGrammar
     {
         private Grammarian classUnderTest;
         private AutoMocker mocker;
-        private Token c1, c2, c3, c4;
-        private Token sd1, sd2, sd3, sd4, sd5, sd6, sd7;
         private Token ls1, ls2, ls3, ls4, ls5;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            mocker = new AutoMocker();
+            ls1 = new KeywordToken("let");
+            ls2 = new IdentifierToken("x");
+            ls3 = new SymbolToken("=");
+            ls4 = new IntegerConstantToken("1234");
+            ls5 = new SymbolToken(";");
+            classUnderTest = mocker.CreateInstance<Grammarian>();
+        }
+
+        [TestMethod]
+        public void RecognisesLetStatementWithSimpleExpression()
+        {
+            classUnderTest.LoadTokens(ls1, ls2, ls3, ls4, ls5);
+            classUnderTest.ParseLetStatement().ShouldGenerateXml(@"
+                        <letStatement>
+                          <keyword>let</keyword>
+                          <identifier>x</identifier>
+                          <symbol>=</symbol>
+                          <expression>
+                            <term>
+                              <integerConstant>1234</integerConstant>
+                            </term>
+                          </expression>
+                          <symbol>;</symbol>
+                        </letStatement>
+            ");
+        }
+    }
+
+    #endregion
+
+    #region ComplexLetStatementGrammar
+
+    [TestClass]
+    public class ComplexLetStatementGrammar
+    {
+        private Grammarian classUnderTest;
+        private AutoMocker mocker;
         private Token cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11;
 
         [TestInitialize]
         public void Setup()
         {
             mocker = new AutoMocker();
-            c1 = new KeywordToken("class");
-            c2 = new IdentifierToken("blah");
-            c3 = new SymbolToken("{");
-            sd1 = new KeywordToken("method");
-            sd2 = new KeywordToken("void");
-            sd3 = new IdentifierToken("doSomething");
-            sd4 = new SymbolToken("(");
-            sd5 = new SymbolToken(")");
-            sd6 = new SymbolToken("{");
-            ls1 = new KeywordToken("let");
-            ls2 = new IdentifierToken("x");
-            ls3 = new SymbolToken("=");
-            ls4 = new IntegerConstantToken("1234");
-            ls5 = new SymbolToken(";");
             cls1 = new KeywordToken("let");
             cls2 = new IdentifierToken("y");
             cls3 = new SymbolToken("[");
@@ -418,103 +436,15 @@ namespace JackAnalyser.Tests
             cls9 = new SymbolToken("~");
             cls10 = new IdentifierToken("finished");
             cls11 = new SymbolToken(";");
-            sd7 = new SymbolToken("}");
-            c4 = new SymbolToken("}");
             classUnderTest = mocker.CreateInstance<Grammarian>();
-        }
-
-        [TestMethod]
-        public void WrapsStatementsInAStatementsNode()
-        {
-            classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4).ShouldGenerateXml(@"
-                <class>
-                  <keyword>class</keyword>
-                  <identifier>blah</identifier>
-                  <symbol>{</symbol>
-                  <subroutineDec>
-                    <keyword>method</keyword>
-                    <keyword>void</keyword>
-                    <identifier>doSomething</identifier>
-                    <symbol>(</symbol>
-                    <symbol>)</symbol>
-                    <subroutineBody>
-                      <symbol>{</symbol>
-                      <statements>
-                        <letStatement>
-                          <keyword>let</keyword>
-                          <identifier>x</identifier>
-                          <symbol>=</symbol>
-                          <expression>
-                            <term>
-                              <integerConstant>1234</integerConstant>
-                            </term>
-                          </expression>
-                          <symbol>;</symbol>
-                        </letStatement>
-                      </statements>
-                      <symbol>}</symbol>
-                    </subroutineBody>
-                  </subroutineDec>
-                  <symbol>}</symbol>
-                </class>
-            ");
-        }
-
-        [TestMethod]
-        public void RecognisesLetStatementWithSimpleExpression()
-        {
-            classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, ls1, ls2, ls3, ls4, ls5, sd7, c4).ShouldGenerateXml(@"
-                <class>
-                  <keyword>class</keyword>
-                  <identifier>blah</identifier>
-                  <symbol>{</symbol>
-                  <subroutineDec>
-                    <keyword>method</keyword>
-                    <keyword>void</keyword>
-                    <identifier>doSomething</identifier>
-                    <symbol>(</symbol>
-                    <symbol>)</symbol>
-                    <subroutineBody>
-                      <symbol>{</symbol>
-                      <statements>
-                        <letStatement>
-                          <keyword>let</keyword>
-                          <identifier>x</identifier>
-                          <symbol>=</symbol>
-                          <expression>
-                            <term>
-                              <integerConstant>1234</integerConstant>
-                            </term>
-                          </expression>
-                          <symbol>;</symbol>
-                        </letStatement>
-                      </statements>
-                      <symbol>}</symbol>
-                    </subroutineBody>
-                  </subroutineDec>
-                  <symbol>}</symbol>
-                </class>
-            ");
         }
 
         [TestMethod]
         public void RecognisesLetStatementWithMoreComplexExpression()
         {
-            classUnderTest.Get(c1, c2, c3, sd1, sd2, sd3, sd4, sd5, sd6, cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11, sd7, c4)
+            classUnderTest.LoadTokens(cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11);
+            classUnderTest.ParseLetStatement()
                 .ShouldGenerateXml(@"
-                    <class>
-                      <keyword>class</keyword>
-                      <identifier>blah</identifier>
-                      <symbol>{</symbol>
-                      <subroutineDec>
-                        <keyword>method</keyword>
-                        <keyword>void</keyword>
-                        <identifier>doSomething</identifier>
-                        <symbol>(</symbol>
-                        <symbol>)</symbol>
-                        <subroutineBody>
-                          <symbol>{</symbol>
-                          <statements>
                             <letStatement>
                               <keyword>let</keyword>
                               <identifier>y</identifier>
@@ -540,12 +470,6 @@ namespace JackAnalyser.Tests
                               </expression>
                               <symbol>;</symbol>
                             </letStatement>
-                          </statements>
-                          <symbol>}</symbol>
-                        </subroutineBody>
-                      </subroutineDec>
-                      <symbol>}</symbol>
-                    </class>
                 ");
         }
     }

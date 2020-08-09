@@ -4,6 +4,8 @@ namespace JackAnalyser
 {
     public interface IGrammarian
     {
-        BranchNode Get(Queue<Token> tokens);
+        IGrammarian LoadTokens(Queue<Token> tokens);
+        ClassNode ParseClass();
+        SubroutineDeclarationNode ParseSubroutineDeclaration();
     }
 }

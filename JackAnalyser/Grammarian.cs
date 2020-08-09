@@ -7,14 +7,20 @@ namespace JackAnalyser
     {
         private Queue<Token> tokens;
 
-        public BranchNode Get(params Token[] tokens)
+        public IGrammarian LoadTokens(params Token[] tokens)
         {
-            return Get(new Queue<Token>(tokens));
+            this.tokens = new Queue<Token>(tokens);
+            return this;
         }
 
-        public BranchNode Get(Queue<Token> tokens)
+        public IGrammarian LoadTokens(Queue<Token> tokens)
         {
             this.tokens = tokens;
+            return this;
+        }
+
+        public ClassNode ParseClass()
+        {
             ClassNode root = new ClassNode();
             root.Children.Add(Dequeue());
             DequeueIdentifier(root, "class expected a className identifier");
@@ -25,18 +31,46 @@ namespace JackAnalyser
             return root;
         }
 
-        private void DequeueClassVariableDeclarations(ClassNode root)
+        public SubroutineDeclarationNode ParseSubroutineDeclaration()
+        {
+            var sd = new SubroutineDeclarationNode();
+            DequeueKeyword(sd);
+            DequeueType(sd);
+            DequeueIdentifier(sd, "expected subroutine name");
+            DequeueSymbol(sd, "(");
+            if (Peek() != ")")
+                DequeueParameterList(sd);
+            DequeueSymbol(sd, ")");
+            DequeueSubroutineBody(sd);
+            return sd;
+        }
+
+        public LetStatementNode ParseLetStatement()
+        {
+            LetStatementNode statement = null;
+            if (Peek() == "let")
+            {
+                statement = new LetStatementNode();
+                DequeueKeyword(statement);
+                DequeueIdentifier(statement, "let statement expected an identifier");
+                DequeueSymbol(statement, "=");
+                DequeueExpression(statement, "let statement expected an expression");
+                DequeueSymbol(statement, ";");
+            }
+            return statement;
+        }
+
+        private void DequeueClassVariableDeclarations(ClassNode parent)
         {
             while (Peek() == "static" || Peek() == "field")
             {
-                DequeueClassVariableDeclaration(root);
+                parent.Children.Add(DequeueClassVariableDeclaration());
             }
         }
 
-        private void DequeueClassVariableDeclaration(ClassNode root)
+        private ClassVariableDeclarationNode DequeueClassVariableDeclaration()
         {
             var cvd = new ClassVariableDeclarationNode();
-            root.Children.Add(cvd);
             DequeueKeyword(cvd);
             DequeueType(cvd);
             bool another;
@@ -47,28 +81,15 @@ namespace JackAnalyser
                 if (another) cvd.Children.Add(tokens.Dequeue());
             } while (another);
             DequeueSymbol(cvd, ";");
+            return cvd;
         }
 
-        private void DequeueSubroutineDeclarations(ClassNode root)
+        private void DequeueSubroutineDeclarations(ClassNode parent)
         {
             while ((Peek()) == "constructor" || (Peek()) == "function" || (Peek()) == "method")
             {
-                DequeueSubroutineDeclaration(root);
+                parent.Children.Add(ParseSubroutineDeclaration());
             }
-        }
-
-        private void DequeueSubroutineDeclaration(ClassNode root)
-        {
-            var sd = new SubroutineDeclarationNode();
-            root.Children.Add(sd);
-            DequeueKeyword(sd);
-            DequeueType(sd);
-            DequeueIdentifier(sd, "expected subroutine name");
-            DequeueSymbol(sd, "(");
-            if (Peek() != ")")
-                DequeueParameterList(sd);
-            DequeueSymbol(sd, ")");
-            DequeueSubroutineBody(sd);
         }
 
         private void DequeueParameterList(SubroutineDeclarationNode sd)
@@ -122,22 +143,10 @@ namespace JackAnalyser
                 body.Children.Add(statements);
                 while (Peek() != "}")
                 {
-                    DequeueLetStatement(statements);
+                    LetStatementNode let = ParseLetStatement();
+                    if (let != null)
+                        statements.Children.Add(let);
                 }
-            }
-        }
-
-        private void DequeueLetStatement(StatementsNode parent)
-        {
-            if (Peek() == "let")
-            {
-                var statement = new LetStatementNode();
-                parent.Children.Add(statement);
-                DequeueKeyword(statement);
-                DequeueIdentifier(statement, "let statement expected an identifier");
-                DequeueSymbol(statement, "=");
-                DequeueExpression(statement, "let statement expected an expression");
-                DequeueSymbol(statement, ";");
             }
         }
 

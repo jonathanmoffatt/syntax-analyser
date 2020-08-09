@@ -28,7 +28,8 @@ namespace JackAnalyser
                 queue.Enqueue(token);
                 token = tokeniser.GetNextToken();
             }
-            Tree = grammarian.Get(queue);
+            grammarian.LoadTokens(queue);
+            Tree = grammarian.ParseClass();
         }
 
         public Token[] Tokens() => tokens.ToArray();

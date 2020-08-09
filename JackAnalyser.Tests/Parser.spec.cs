@@ -62,15 +62,18 @@ namespace JackAnalyser.Tests
             ClassNode classNode = new ClassNode();
             mocker
                 .GetMock<IGrammarian>()
-                .Setup(f => f.Get(It.Is<Queue<Token>>(q =>
+                .Setup(f => f.ParseClass())
+                .Returns(classNode);
+            classUnderTest.Parse(tokeniser.Object);
+            classUnderTest.Tree.Should().Be(classNode);
+            mocker
+                .GetMock<IGrammarian>()
+                .Verify(f => f.LoadTokens(It.Is<Queue<Token>>(q =>
                     q.Contains(t1) &&
                     q.Contains(t2) &&
                     q.Contains(t3) &&
                     q.Contains(t4)
-                )))
-                .Returns(classNode);
-            classUnderTest.Parse(tokeniser.Object);
-            classUnderTest.Tree.Should().Be(classNode);
+                )));
         }
     }
 
