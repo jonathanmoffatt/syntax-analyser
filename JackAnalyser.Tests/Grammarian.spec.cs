@@ -27,10 +27,10 @@ namespace JackAnalyser.Tests
         [TestInitialize]
         public void Setup()
         {
-            t1 = new KeywordToken("class");
-            t2 = new IdentifierToken("blah");
-            t3 = new SymbolToken("{");
-            t4 = new SymbolToken("}");
+            t1 = new Token(NodeType.Keyword, "class");
+            t2 = new Token(NodeType.Identifier, "blah");
+            t3 = new Token(NodeType.Symbol, "{");
+            t4 = new Token(NodeType.Symbol, "}");
             classUnderTest = new Grammarian();
         }
 
@@ -101,13 +101,13 @@ namespace JackAnalyser.Tests
         [TestInitialize]
         public void Setup()
         {
-            cvd1 = new KeywordToken("static");
-            cvd1a = new KeywordToken("field");
-            cvd2 = new KeywordToken("boolean");
-            cvd3 = new IdentifierToken("hasStarted");
-            cvd4 = new SymbolToken(",");
-            cvd5 = new IdentifierToken("hasFinished");
-            cvd6 = new SymbolToken(";");
+            cvd1 = new Token(NodeType.Keyword, "static");
+            cvd1a = new Token(NodeType.Keyword, "field");
+            cvd2 = new Token(NodeType.Keyword, "boolean");
+            cvd3 = new Token(NodeType.Identifier, "hasStarted");
+            cvd4 = new Token(NodeType.Symbol, ",");
+            cvd5 = new Token(NodeType.Identifier, "hasFinished");
+            cvd6 = new Token(NodeType.Symbol, ";");
             classUnderTest = new Grammarian();
         }
 
@@ -182,30 +182,30 @@ namespace JackAnalyser.Tests
         [TestInitialize]
         public void Setup()
         {
-            sd1 = new KeywordToken("constructor");
-            sd1a = new KeywordToken("function");
-            sd1b = new KeywordToken("method");
-            sd2 = new KeywordToken("void");
-            sd3 = new IdentifierToken("doSomething");
-            sd4 = new SymbolToken("(");
-            sd5 = new KeywordToken("int");
-            sd6 = new IdentifierToken("x");
-            sd7 = new SymbolToken(",");
-            sd8 = new IdentifierToken("Game");
-            sd9 = new IdentifierToken("game");
-            sd10 = new SymbolToken(")");
-            sd11 = new SymbolToken("{");
-            vd1 = new KeywordToken("var");
-            vd2 = new KeywordToken("boolean");
-            vd3 = new IdentifierToken("hasStarted");
-            vd4 = new SymbolToken(",");
-            vd5 = new IdentifierToken("hasFinished");
-            vd6 = new SymbolToken(";");
-            vd7 = new KeywordToken("var");
-            vd8 = new IdentifierToken("Player");
-            vd9 = new IdentifierToken("player");
-            vd10 = new SymbolToken(";");
-            sd12 = new SymbolToken("}");
+            sd1 = new Token(NodeType.Keyword, "constructor");
+            sd1a = new Token(NodeType.Keyword, "function");
+            sd1b = new Token(NodeType.Keyword, "method");
+            sd2 = new Token(NodeType.Keyword, "void");
+            sd3 = new Token(NodeType.Identifier, "doSomething");
+            sd4 = new Token(NodeType.Symbol, "(");
+            sd5 = new Token(NodeType.Keyword, "int");
+            sd6 = new Token(NodeType.Identifier, "x");
+            sd7 = new Token(NodeType.Symbol, ",");
+            sd8 = new Token(NodeType.Identifier, "Game");
+            sd9 = new Token(NodeType.Identifier, "game");
+            sd10 = new Token(NodeType.Symbol, ")");
+            sd11 = new Token(NodeType.Symbol, "{");
+            vd1 = new Token(NodeType.Keyword, "var");
+            vd2 = new Token(NodeType.Keyword, "boolean");
+            vd3 = new Token(NodeType.Identifier, "hasStarted");
+            vd4 = new Token(NodeType.Symbol, ",");
+            vd5 = new Token(NodeType.Identifier, "hasFinished");
+            vd6 = new Token(NodeType.Symbol, ";");
+            vd7 = new Token(NodeType.Keyword, "var");
+            vd8 = new Token(NodeType.Identifier, "Player");
+            vd9 = new Token(NodeType.Identifier, "player");
+            vd10 = new Token(NodeType.Symbol, ";");
+            sd12 = new Token(NodeType.Symbol, "}");
             classUnderTest = new Grammarian();
         }
 
@@ -349,11 +349,11 @@ namespace JackAnalyser.Tests
         public void Setup()
         {
             classUnderTest = new Grammarian();
-            Token ls1 = new KeywordToken("let");
-            Token ls2 = new IdentifierToken("x");
-            Token ls3 = new SymbolToken("=");
-            Token ls4 = new IntegerConstantToken("1234");
-            Token ls5 = new SymbolToken(";");
+            Token ls1 = new Token(NodeType.Keyword, "let");
+            Token ls2 = new Token(NodeType.Identifier, "x");
+            Token ls3 = new Token(NodeType.Symbol, "=");
+            Token ls4 = new Token(NodeType.IntegerConstant, "1234");
+            Token ls5 = new Token(NodeType.Symbol, ";");
             classUnderTest.LoadTokens(ls1, ls2, ls3, ls4, ls5);
         }
 
@@ -388,17 +388,17 @@ namespace JackAnalyser.Tests
         [TestInitialize]
         public void Setup()
         {
-            Token cls1 = new KeywordToken("let");
-            Token cls2 = new IdentifierToken("y");
-            Token cls3 = new SymbolToken("[");
-            Token cls4 = new IdentifierToken("x");
-            Token cls5 = new SymbolToken("+");
-            Token cls6 = new IntegerConstantToken("1");
-            Token cls7 = new SymbolToken("]");
-            Token cls8 = new SymbolToken("=");
-            Token cls9 = new SymbolToken("~");
-            Token cls10 = new IdentifierToken("finished");
-            Token cls11 = new SymbolToken(";");
+            Token cls1 = new Token(NodeType.Keyword, "let");
+            Token cls2 = new Token(NodeType.Identifier, "y");
+            Token cls3 = new Token(NodeType.Symbol, "[");
+            Token cls4 = new Token(NodeType.Identifier, "x");
+            Token cls5 = new Token(NodeType.Symbol, "+");
+            Token cls6 = new Token(NodeType.IntegerConstant, "1");
+            Token cls7 = new Token(NodeType.Symbol, "]");
+            Token cls8 = new Token(NodeType.Symbol, "=");
+            Token cls9 = new Token(NodeType.Symbol, "~");
+            Token cls10 = new Token(NodeType.Identifier, "finished");
+            Token cls11 = new Token(NodeType.Symbol, ";");
             classUnderTest = new Grammarian();
             classUnderTest.LoadTokens(cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11);
         }
@@ -451,9 +451,9 @@ namespace JackAnalyser.Tests
         public void Setup()
         {
             classUnderTest = new Grammarian();
-            t1 = new KeywordToken("return");
-            t2 = new IdentifierToken("result");
-            t3 = new SymbolToken(";");
+            t1 = new Token(NodeType.Keyword, "return");
+            t2 = new Token(NodeType.Identifier, "result");
+            t3 = new Token(NodeType.Symbol, ";");
         }
 
         [TestMethod]
@@ -502,33 +502,33 @@ namespace JackAnalyser.Tests
         public void Setup()
         {
             classUnderTest = new Grammarian();
-            t1 = new KeywordToken("if");
-            t2 = new SymbolToken("(");
-            t3 = new SymbolToken("(");
-            t4 = new IdentifierToken("x");
-            t5 = new SymbolToken("*");
-            t6 = new IntegerConstantToken("5");
-            t7 = new SymbolToken(")");
-            t8 = new SymbolToken(">");
-            t9 = new IntegerConstantToken("30");
-            t10 = new SymbolToken(")");
-            t11 = new SymbolToken("{");
-            t12 = new KeywordToken("return");
-            t13 = new SymbolToken(";");
-            t14 = new SymbolToken("}");
-            t15 = new KeywordToken("else");
-            t16 = new SymbolToken("{");
-            t17 = new KeywordToken("return");
-            t18 = new IdentifierToken("result");
-            t19 = new SymbolToken(";");
-            t20 = new SymbolToken("}");
+            t1 = new Token(NodeType.Keyword, "if");
+            t2 = new Token(NodeType.Symbol, "(");
+            t3 = new Token(NodeType.Symbol, "(");
+            t4 = new Token(NodeType.Identifier, "x");
+            t5 = new Token(NodeType.Symbol, "*");
+            t6 = new Token(NodeType.IntegerConstant, "5");
+            t7 = new Token(NodeType.Symbol, ")");
+            t8 = new Token(NodeType.Symbol, ">");
+            t9 = new Token(NodeType.IntegerConstant, "30");
+            t10 = new Token(NodeType.Symbol, ")");
+            t11 = new Token(NodeType.Symbol, "{");
+            t12 = new Token(NodeType.Keyword, "return");
+            t13 = new Token(NodeType.Symbol, ";");
+            t14 = new Token(NodeType.Symbol, "}");
+            t15 = new Token(NodeType.Keyword, "else");
+            t16 = new Token(NodeType.Symbol, "{");
+            t17 = new Token(NodeType.Keyword, "return");
+            t18 = new Token(NodeType.Identifier, "result");
+            t19 = new Token(NodeType.Symbol, ";");
+            t20 = new Token(NodeType.Symbol, "}");
         }
 
         [TestMethod]
         public void ParsesCorrectlyWithoutAnElseBlock()
         {
             classUnderTest.LoadTokens(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14);
-            IfStatementNode node = classUnderTest.ParseIfStatement();
+            BranchNode node = classUnderTest.ParseIfStatement();
             Console.WriteLine(node.ToXml());
             node.ShouldGenerateXml(@"
                 <ifStatement>
@@ -634,17 +634,17 @@ namespace JackAnalyser.Tests
         public void Setup()
         {
             classUnderTest = new Grammarian();
-            var t1 = new KeywordToken("while");
-            var t2 = new SymbolToken("(");
-            var t3 = new IdentifierToken("inProgress");
-            var t4 = new SymbolToken(")");
-            var t5 = new SymbolToken("{");
-            var t6 = new KeywordToken("let");
-            var t7 = new IdentifierToken("x");
-            var t8 = new SymbolToken("=");
-            var t9 = new IdentifierToken("y");
-            var t10 = new SymbolToken(";");
-            var t11 = new SymbolToken("}");
+            var t1 = new Token(NodeType.Keyword, "while");
+            var t2 = new Token(NodeType.Symbol, "(");
+            var t3 = new Token(NodeType.Identifier, "inProgress");
+            var t4 = new Token(NodeType.Symbol, ")");
+            var t5 = new Token(NodeType.Symbol, "{");
+            var t6 = new Token(NodeType.Keyword, "let");
+            var t7 = new Token(NodeType.Identifier, "x");
+            var t8 = new Token(NodeType.Symbol, "=");
+            var t9 = new Token(NodeType.Identifier, "y");
+            var t10 = new Token(NodeType.Symbol, ";");
+            var t11 = new Token(NodeType.Symbol, "}");
             classUnderTest.LoadTokens(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11);
         }
 

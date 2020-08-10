@@ -14,7 +14,7 @@ namespace JackAnalyser.Tests
         public void RecognisesAKeywordToken()
         {
             using var t = new Tokeniser("class");
-            t.GetNextToken().Should().BeOfType<KeywordToken>();
+            t.GetNextToken().Type.Should().Be(NodeType.Keyword);
         }
 
         [TestMethod]
@@ -91,7 +91,7 @@ namespace JackAnalyser.Tests
             Token token = t.GetNextToken();
             while (token != null)
             {
-                token.Should().BeOfType<KeywordToken>();
+                token.Type.Should().Be(NodeType.Keyword);
                 token = t.GetNextToken();
             }
         }
@@ -103,7 +103,7 @@ namespace JackAnalyser.Tests
             Token token = t.GetNextToken();
             while (token != null)
             {
-                token.Should().BeOfType<SymbolToken>();
+                token.Type.Should().Be(NodeType.Symbol);
                 token = t.GetNextToken();
             }
         }
@@ -113,7 +113,7 @@ namespace JackAnalyser.Tests
         {
             using var t = new Tokeniser("12345");
             Token token = t.GetNextToken();
-            token.Should().BeOfType<IntegerConstantToken>();
+            token.Type.Should().Be(NodeType.IntegerConstant);
             token.Value.Should().Be("12345");
         }
 
@@ -122,7 +122,7 @@ namespace JackAnalyser.Tests
         {
             using var t = new Tokeniser("123four5");
             Token token = t.GetNextToken();
-            token.Should().NotBeOfType<IntegerConstantToken>();
+            token.Type.Should().NotBe(NodeType.IntegerConstant);
         }
 
         [TestMethod]
@@ -130,7 +130,7 @@ namespace JackAnalyser.Tests
         {
             using var t = new Tokeniser("\"the quick brown fox, jumps over 23 ______ (of something)\"");
             Token token = t.GetNextToken();
-            token.Should().BeOfType<StringConstantToken>();
+            token.Type.Should().Be(NodeType.StringConstant);
             token.Value.Should().Be("the quick brown fox, jumps over 23 ______ (of something)");
         }
 
@@ -139,7 +139,7 @@ namespace JackAnalyser.Tests
         {
             using var t = new Tokeniser("counter");
             Token token = t.GetNextToken();
-            token.Should().BeOfType<IdentifierToken>();
+            token.Type.Should().Be(NodeType.Identifier);
             token.Value.Should().Be("counter");
         }
 
@@ -148,7 +148,7 @@ namespace JackAnalyser.Tests
         {
             using var t = new Tokeniser("first_3_entries");
             Token token = t.GetNextToken();
-            token.Should().BeOfType<IdentifierToken>();
+            token.Type.Should().Be(NodeType.Identifier);
             token.Value.Should().Be("first_3_entries");
         }
 
@@ -211,63 +211,63 @@ namespace JackAnalyser.Tests
 
             Token token = t.GetNextToken();
             token.Value.Should().Be("let");
-            token.Should().BeOfType<KeywordToken>();
+            token.Type.Should().Be(NodeType.Keyword);
 
             token = t.GetNextToken();
             token.Value.Should().Be("first_3_entries");
-            token.Should().BeOfType<IdentifierToken>();
+            token.Type.Should().Be(NodeType.Identifier);
 
             token = t.GetNextToken();
             token.Value.Should().Be("=");
-            token.Should().BeOfType<SymbolToken>();
+            token.Type.Should().Be(NodeType.Symbol);
 
             token = t.GetNextToken();
             token.Value.Should().Be("three");
-            token.Should().BeOfType<StringConstantToken>();
+            token.Type.Should().Be(NodeType.StringConstant);
 
             token = t.GetNextToken();
             token.Value.Should().Be(";");
-            token.Should().BeOfType<SymbolToken>();
+            token.Type.Should().Be(NodeType.Symbol);
 
             token = t.GetNextToken();
             token.Value.Should().Be("let");
-            token.Should().BeOfType<KeywordToken>();
+            token.Type.Should().Be(NodeType.Keyword);
 
             token = t.GetNextToken();
             token.Value.Should().Be("x");
-            token.Should().BeOfType<IdentifierToken>();
+            token.Type.Should().Be(NodeType.Identifier);
 
             token = t.GetNextToken();
             token.Value.Should().Be("=");
-            token.Should().BeOfType<SymbolToken>();
+            token.Type.Should().Be(NodeType.Symbol);
 
             token = t.GetNextToken();
             token.Value.Should().Be("x");
-            token.Should().BeOfType<IdentifierToken>();
+            token.Type.Should().Be(NodeType.Identifier);
 
             token = t.GetNextToken();
             token.Value.Should().Be("+");
-            token.Should().BeOfType<SymbolToken>();
+            token.Type.Should().Be(NodeType.Symbol);
 
             token = t.GetNextToken();
             token.Value.Should().Be("1");
-            token.Should().BeOfType<IntegerConstantToken>();
+            token.Type.Should().Be(NodeType.IntegerConstant);
 
             token = t.GetNextToken();
             token.Value.Should().Be(";");
-            token.Should().BeOfType<SymbolToken>();
+            token.Type.Should().Be(NodeType.Symbol);
 
             token = t.GetNextToken();
             token.Value.Should().Be("return");
-            token.Should().BeOfType<KeywordToken>();
+            token.Type.Should().Be(NodeType.Keyword);
 
             token = t.GetNextToken();
             token.Value.Should().Be("x");
-            token.Should().BeOfType<IdentifierToken>();
+            token.Type.Should().Be(NodeType.Identifier);
 
             token = t.GetNextToken();
             token.Value.Should().Be(";");
-            token.Should().BeOfType<SymbolToken>();
+            token.Type.Should().Be(NodeType.Symbol);
 
             t.GetNextToken().Should().BeNull();
         }

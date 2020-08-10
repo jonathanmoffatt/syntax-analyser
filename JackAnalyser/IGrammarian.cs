@@ -5,9 +5,9 @@ namespace JackAnalyser
     public interface IGrammarian
     {
         IGrammarian LoadTokens(Queue<Token> tokens);
-        ClassNode ParseClass();
-        ClassVariableDeclarationNode ParseClassVariableDeclaration();
-        ReturnStatementNode ParseReturnStatement();
-        SubroutineDeclarationNode ParseSubroutineDeclaration();
+        BranchNode ParseClass();
+        BranchNode ParseClassVariableDeclaration();
+        BranchNode ParseReturnStatement();
+        BranchNode ParseSubroutineDeclaration();
     }
 }

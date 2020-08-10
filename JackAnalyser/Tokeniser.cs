@@ -61,11 +61,11 @@ namespace JackAnalyser
             SkipWhitespace();
             if (AtEnd) return null;
             string chunk = GetChunk();
-            if (IsSymbol(chunk)) return new SymbolToken(chunk);
-            if (IsInteger(chunk)) return new IntegerConstantToken(chunk);
-            if (IsString(chunk)) return new StringConstantToken(chunk);
-            if (IsKeyword(chunk)) return new KeywordToken(chunk);
-            return new IdentifierToken(chunk);
+            if (IsSymbol(chunk)) return new Token(NodeType.Symbol, chunk);
+            if (IsInteger(chunk)) return new Token(NodeType.IntegerConstant, chunk);
+            if (IsString(chunk)) return new Token(NodeType.StringConstant, chunk.Replace("\"", ""));
+            if (IsKeyword(chunk)) return new Token(NodeType.Keyword, chunk);
+            return new Token(NodeType.Identifier, chunk);
         }
 
         private void RefreshBuffer()

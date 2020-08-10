@@ -36,10 +36,10 @@ namespace JackAnalyser.Tests
         {
             tokeniser
                 .SetupSequence(t => t.GetNextToken())
-                .Returns(new KeywordToken("class"))
-                .Returns(new IdentifierToken("blah"))
-                .Returns(new SymbolToken("{"))
-                .Returns(new SymbolToken("}"))
+                .Returns(new Token(NodeType.Keyword, "class"))
+                .Returns(new Token(NodeType.Identifier, "blah"))
+                .Returns(new Token(NodeType.Symbol, "{"))
+                .Returns(new Token(NodeType.Symbol, "}"))
                 .Returns(() => null);
             classUnderTest.Parse(tokeniser.Object);
             classUnderTest.Tokens().Should().HaveCount(4);
@@ -48,10 +48,10 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void PassesTokensToTheGrammarian()
         {
-            KeywordToken t1 = new KeywordToken("class");
-            IdentifierToken t2 = new IdentifierToken("blah");
-            SymbolToken t3 = new SymbolToken("{");
-            SymbolToken t4 = new SymbolToken("}");
+            Token t1 = new Token(NodeType.Keyword, "class");
+            Token t2 = new Token(NodeType.Identifier, "blah");
+            Token t3 = new Token(NodeType.Symbol, "{");
+            Token t4 = new Token(NodeType.Symbol, "}");
             tokeniser
                 .SetupSequence(t => t.GetNextToken())
                 .Returns(t1)
@@ -59,7 +59,7 @@ namespace JackAnalyser.Tests
                 .Returns(t3)
                 .Returns(t4)
                 .Returns(() => null);
-            ClassNode classNode = new ClassNode();
+            BranchNode classNode = new BranchNode(NodeType.Class);
             mocker
                 .GetMock<IGrammarian>()
                 .Setup(f => f.ParseClass())

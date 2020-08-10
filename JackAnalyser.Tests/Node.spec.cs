@@ -12,23 +12,23 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ReturnsAnXmlElement()
         {
-            XElement xElement = new SymbolToken(")").ToXml();
+            XElement xElement = new Token(NodeType.Symbol, ")").ToXml();
             xElement.Name.ToString().Should().Be("symbol");
         }
 
         [TestMethod]
         public void SetsValueXmlElementToValueOfToken()
         {
-            new SymbolToken(")").ToXml().Value.Should().Be(")");
+            new Token(NodeType.Symbol, ")").ToXml().Value.Should().Be(")");
         }
 
         [TestMethod]
         public void SetsElementNameBasedOnTheTypeOfToken()
         {
-            new KeywordToken("let").ToXml().Name.ToString().Should().Be("keyword");
-            new StringConstantToken("hello").ToXml().Name.ToString().Should().Be("stringConstant");
-            new IntegerConstantToken("123").ToXml().Name.ToString().Should().Be("integerConstant");
-            new IdentifierToken("counter").ToXml().Name.ToString().Should().Be("identifier");
+            new Token(NodeType.Keyword, "let").ToXml().Name.ToString().Should().Be("keyword");
+            new Token(NodeType.StringConstant, "hello").ToXml().Name.ToString().Should().Be("stringConstant");
+            new Token(NodeType.IntegerConstant, "123").ToXml().Name.ToString().Should().Be("integerConstant");
+            new Token(NodeType.Identifier, "counter").ToXml().Name.ToString().Should().Be("identifier");
         }
     }
 
@@ -42,22 +42,22 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ReturnsEmptyElementIfThereAreNoChildren()
         {
-            new StatementsNode().ToXml().ToString().Should().Be("<statements />");
+            new BranchNode(NodeType.Statements).ToXml().ToString().Should().Be("<statements />");
         }
 
         [TestMethod]
         public void NestsChildrenUnderTheElement()
         {
-            var root = new ClassNode();
-            root.AddChild(new KeywordToken("class"));
-            root.AddChild(new IdentifierToken("Game"));
-            root.AddChild(new SymbolToken("{"));
-            var variables = new ClassVariableDeclarationNode();
+            var root = new BranchNode(NodeType.Class);
+            root.AddChild(new Token(NodeType.Keyword, "class"));
+            root.AddChild(new Token(NodeType.Identifier, "Game"));
+            root.AddChild(new Token(NodeType.Symbol, "{"));
+            var variables = new BranchNode(NodeType.ClassVariableDeclaration);
             root.AddChild(variables);
-            variables.AddChild(new KeywordToken("field"));
-            variables.AddChild(new KeywordToken("int"));
-            variables.AddChild(new IdentifierToken("direction"));
-            variables.AddChild(new SymbolToken(";"));
+            variables.AddChild(new Token(NodeType.Keyword, "field"));
+            variables.AddChild(new Token(NodeType.Keyword, "int"));
+            variables.AddChild(new Token(NodeType.Identifier, "direction"));
+            variables.AddChild(new Token(NodeType.Symbol, ";"));
             root.ToXml().ToString().Should().Be(
 @"<class>
   <keyword>class</keyword>
