@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Xml.Linq;
 
 namespace JackAnalyser
@@ -10,7 +8,7 @@ namespace JackAnalyser
         private List<Token> tokens;
         private readonly IGrammarian grammarian;
 
-        public BranchNode Tree { get; set; }
+        public Node Tree { get; set; }
 
         public Parser(IGrammarian grammarian)
         {

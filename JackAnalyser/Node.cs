@@ -4,13 +4,13 @@ using System.Xml.Linq;
 
 namespace JackAnalyser
 {
-    public class BranchNode : NodeBase
+    public class Node : NodeBase
     {
         private List<NodeBase> children = new List<NodeBase>();
 
         public IEnumerable<NodeBase> Children => children;
 
-        public BranchNode(NodeType type)
+        public Node(NodeType type)
         {
             Type = type;
         }

@@ -42,17 +42,17 @@ namespace JackAnalyser.Tests
         [TestMethod]
         public void ReturnsEmptyElementIfThereAreNoChildren()
         {
-            new BranchNode(NodeType.Statements).ToXml().ToString().Should().Be("<statements />");
+            new Node(NodeType.Statements).ToXml().ToString().Should().Be("<statements />");
         }
 
         [TestMethod]
         public void NestsChildrenUnderTheElement()
         {
-            var root = new BranchNode(NodeType.Class);
+            var root = new Node(NodeType.Class);
             root.AddChild(new Token(NodeType.Keyword, "class"));
             root.AddChild(new Token(NodeType.Identifier, "Game"));
             root.AddChild(new Token(NodeType.Symbol, "{"));
-            var variables = new BranchNode(NodeType.ClassVariableDeclaration);
+            var variables = new Node(NodeType.ClassVariableDeclaration);
             root.AddChild(variables);
             variables.AddChild(new Token(NodeType.Keyword, "field"));
             variables.AddChild(new Token(NodeType.Keyword, "int"));

@@ -59,7 +59,7 @@ namespace JackAnalyser.Tests
                 .Returns(t3)
                 .Returns(t4)
                 .Returns(() => null);
-            BranchNode classNode = new BranchNode(NodeType.Class);
+            Node classNode = new Node(NodeType.Class);
             mocker
                 .GetMock<IGrammarian>()
                 .Setup(f => f.ParseClass())
