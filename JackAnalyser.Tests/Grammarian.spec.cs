@@ -10,7 +10,7 @@ namespace JackAnalyser.Tests
 {
     internal static class NodeTestExtensions
     {
-        public static void ShouldGenerateXml(this Node node, string expectedXml)
+        public static void ShouldGenerateXml(this NodeBase node, string expectedXml)
         {
             node.ToXml().Should().BeEquivalentTo(XElement.Parse(expectedXml));
         }

@@ -1,9 +1,8 @@
-﻿using System.Linq;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace JackAnalyser
 {
-    public abstract class Node
+    public abstract class NodeBase
     {
         public NodeType Type { get; protected set; }
 

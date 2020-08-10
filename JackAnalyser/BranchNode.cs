@@ -4,18 +4,18 @@ using System.Xml.Linq;
 
 namespace JackAnalyser
 {
-    public class BranchNode : Node
+    public class BranchNode : NodeBase
     {
-        private List<Node> children = new List<Node>();
+        private List<NodeBase> children = new List<NodeBase>();
 
-        public IEnumerable<Node> Children => children;
+        public IEnumerable<NodeBase> Children => children;
 
         public BranchNode(NodeType type)
         {
             Type = type;
         }
 
-        public T AddChild<T>(T node) where T : Node
+        public T AddChild<T>(T node) where T : NodeBase
         {
             if (node != null)
                 children.Add(node);

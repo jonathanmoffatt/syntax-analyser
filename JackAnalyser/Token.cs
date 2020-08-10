@@ -2,7 +2,7 @@
 
 namespace JackAnalyser
 {
-    public class Token : Node
+    public class Token : NodeBase
     {
         public string Value { get; private set; }
 
