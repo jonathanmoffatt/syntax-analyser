@@ -8,6 +8,7 @@ namespace JackAnalyser
         Node ParseClass();
         Node ParseClassVariableDeclaration();
         Node ParseExpression();
+        Node ParseExpressionList();
         Node ParseParameterList();
         Node ParseReturnStatement();
         Node ParseStatements();

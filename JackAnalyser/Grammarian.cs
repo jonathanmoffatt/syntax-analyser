@@ -125,6 +125,24 @@ namespace JackAnalyser
             return statement;
         }
 
+        public Node ParseDoStatement()
+        {
+            if (Peek() != "do") return null;
+            var statement = new Node(NodeType.DoStatement);
+            DequeueKeyword(statement);
+            DequeueIdentifier(statement, "expected identifier after do statement");
+            if (Peek() == ".")
+            {
+                DequeueSymbol(statement, ".");
+                DequeueIdentifier(statement, "expected identifier after '.' in do statement");
+            }
+            DequeueSymbol(statement, "(");
+            statement.AddChild(ParseExpressionList());
+            DequeueSymbol(statement, ")");
+            DequeueSymbol(statement, ";");
+            return statement;
+        }
+
         public Node ParseParameterList()
         {
             var pl = new Node(NodeType.ParameterList);
@@ -180,6 +198,7 @@ namespace JackAnalyser
                 statements.AddChild(ParseIfStatement());
                 statements.AddChild(ParseReturnStatement());
                 statements.AddChild(ParseWhileStatement());
+                statements.AddChild(ParseDoStatement());
             }
             return statements;
         }
@@ -227,17 +246,23 @@ namespace JackAnalyser
                 if (Peek() == "(")
                 {
                     DequeueSymbol(term, "(");
-                    var expressionList = term.AddChild(new Node(NodeType.ExpressionList));
-                    while(Peek() != ")")
-                    {
-                        expressionList.AddChild(ParseExpression());
-                        if (Peek() == ",")
-                            DequeueSymbol(expressionList, ",");
-                    }
+                    term.AddChild(ParseExpressionList());
                     DequeueSymbol(term, ")");
                 }
             }
             return term;
+        }
+
+        public Node ParseExpressionList()
+        {
+            var expressionList = new Node(NodeType.ExpressionList);
+            while (Peek() != ")")
+            {
+                expressionList.AddChild(ParseExpression());
+                if (Peek() == ",")
+                    DequeueSymbol(expressionList, ",");
+            }
+            return expressionList;
         }
 
         private void DequeueType(Node parent)

@@ -783,4 +783,105 @@ namespace JackAnalyser.Tests
     }
 
     #endregion
+
+    #region SimpleDoStatementGrammar
+
+    [TestClass]
+    public class SimpleDoStatementGrammar
+    {
+        private Grammarian classUnderTest;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            classUnderTest = new Grammarian();
+            classUnderTest.LoadTokens(
+                new Token(NodeType.Keyword, "do"),
+                new Token(NodeType.Identifier, "something"),
+                new Token(NodeType.Symbol, "("),
+                new Token(NodeType.Symbol, ")"),
+                new Token(NodeType.Symbol, ";")
+            );
+        }
+
+        [TestMethod]
+        public void ParsesCorrectly()
+        {
+            classUnderTest.ParseDoStatement().ShouldGenerateXml(@"
+                <doStatement>
+                    <keyword>do</keyword>
+                    <identifier>something</identifier>
+                    <symbol>(</symbol>
+                    <expressionList/>
+                    <symbol>)</symbol>
+                    <symbol>;</symbol>
+                </doStatement>
+            ");
+        }
+    }
+
+    #endregion
+
+    #region MoreComplexDoStatementGrammar
+
+    [TestClass]
+    public class MoreComplexDoStatementGrammar
+    {
+        private Grammarian classUnderTest;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            classUnderTest = new Grammarian();
+            classUnderTest.LoadTokens(
+                new Token(NodeType.Keyword, "do"),
+                new Token(NodeType.Identifier, "myClass"),
+                new Token(NodeType.Symbol, "."),
+                new Token(NodeType.Identifier, "something"),
+                new Token(NodeType.Symbol, "("),
+                new Token(NodeType.IntegerConstant, "5"),
+                new Token(NodeType.Symbol, "+"),
+                new Token(NodeType.IntegerConstant, "3"),
+                new Token(NodeType.Symbol, ","),
+                new Token(NodeType.Identifier, "blah"),
+                new Token(NodeType.Symbol, ")"),
+                new Token(NodeType.Symbol, ";")
+            );
+        }
+
+        [TestMethod]
+        public void ParsesCorrectly()
+        {
+            classUnderTest.ParseDoStatement().ShouldGenerateXml(@"
+<doStatement>
+    <keyword>do</keyword>
+    <identifier>myClass</identifier>
+    <symbol>.</symbol>
+    <identifier>something</identifier>
+    <symbol>(</symbol>
+    <expressionList>
+        <expression>
+            <term>
+                <integerConstant>5</integerConstant>
+            </term>
+            <symbol>+</symbol>
+            <term>
+                <integerConstant>3</integerConstant>
+            </term>
+        </expression>
+        <symbol>,</symbol>
+        <expression>
+            <term>
+                <identifier>blah</identifier>
+            </term>
+        </expression>
+    </expressionList>
+    <symbol>)</symbol>
+    <symbol>;</symbol>
+</doStatement>
+");
+        }
+    }
+
+    #endregion
 }
