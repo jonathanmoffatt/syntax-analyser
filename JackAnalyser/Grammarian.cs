@@ -219,6 +219,23 @@ namespace JackAnalyser
                     term.AddChild(ParseExpression());
                     DequeueSymbol(term, "]");
                 }
+                if (Peek() == ".")
+                {
+                    DequeueSymbol(term, ".");
+                    DequeueIdentifier(term, "expected subroutineName");
+                }
+                if (Peek() == "(")
+                {
+                    DequeueSymbol(term, "(");
+                    var expressionList = term.AddChild(new Node(NodeType.ExpressionList));
+                    while(Peek() != ")")
+                    {
+                        expressionList.AddChild(ParseExpression());
+                        if (Peek() == ",")
+                            DequeueSymbol(expressionList, ",");
+                    }
+                    DequeueSymbol(term, ")");
+                }
             }
             return term;
         }

@@ -349,12 +349,13 @@ namespace JackAnalyser.Tests
         public void Setup()
         {
             classUnderTest = new Grammarian();
-            Token ls1 = new Token(NodeType.Keyword, "let");
-            Token ls2 = new Token(NodeType.Identifier, "x");
-            Token ls3 = new Token(NodeType.Symbol, "=");
-            Token ls4 = new Token(NodeType.IntegerConstant, "1234");
-            Token ls5 = new Token(NodeType.Symbol, ";");
-            classUnderTest.LoadTokens(ls1, ls2, ls3, ls4, ls5);
+            classUnderTest.LoadTokens(
+                new Token(NodeType.Keyword, "let"),
+                new Token(NodeType.Identifier, "x"),
+                new Token(NodeType.Symbol, "="),
+                new Token(NodeType.IntegerConstant, "1234"),
+                new Token(NodeType.Symbol, ";")
+            );
         }
 
         [TestMethod]
@@ -388,19 +389,20 @@ namespace JackAnalyser.Tests
         [TestInitialize]
         public void Setup()
         {
-            Token cls1 = new Token(NodeType.Keyword, "let");
-            Token cls2 = new Token(NodeType.Identifier, "y");
-            Token cls3 = new Token(NodeType.Symbol, "[");
-            Token cls4 = new Token(NodeType.Identifier, "x");
-            Token cls5 = new Token(NodeType.Symbol, "+");
-            Token cls6 = new Token(NodeType.IntegerConstant, "1");
-            Token cls7 = new Token(NodeType.Symbol, "]");
-            Token cls8 = new Token(NodeType.Symbol, "=");
-            Token cls9 = new Token(NodeType.Symbol, "~");
-            Token cls10 = new Token(NodeType.Identifier, "finished");
-            Token cls11 = new Token(NodeType.Symbol, ";");
             classUnderTest = new Grammarian();
-            classUnderTest.LoadTokens(cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10, cls11);
+            classUnderTest.LoadTokens(
+                new Token(NodeType.Keyword, "let"),
+                new Token(NodeType.Identifier, "y"),
+                new Token(NodeType.Symbol, "["),
+                new Token(NodeType.Identifier, "x"),
+                new Token(NodeType.Symbol, "+"),
+                new Token(NodeType.IntegerConstant, "1"),
+                new Token(NodeType.Symbol, "]"),
+                new Token(NodeType.Symbol, "="),
+                new Token(NodeType.Symbol, "~"),
+                new Token(NodeType.Identifier, "finished"),
+                new Token(NodeType.Symbol, ";")
+            );
         }
 
         [TestMethod]
@@ -634,18 +636,19 @@ namespace JackAnalyser.Tests
         public void Setup()
         {
             classUnderTest = new Grammarian();
-            var t1 = new Token(NodeType.Keyword, "while");
-            var t2 = new Token(NodeType.Symbol, "(");
-            var t3 = new Token(NodeType.Identifier, "inProgress");
-            var t4 = new Token(NodeType.Symbol, ")");
-            var t5 = new Token(NodeType.Symbol, "{");
-            var t6 = new Token(NodeType.Keyword, "let");
-            var t7 = new Token(NodeType.Identifier, "x");
-            var t8 = new Token(NodeType.Symbol, "=");
-            var t9 = new Token(NodeType.Identifier, "y");
-            var t10 = new Token(NodeType.Symbol, ";");
-            var t11 = new Token(NodeType.Symbol, "}");
-            classUnderTest.LoadTokens(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11);
+            classUnderTest.LoadTokens(
+                new Token(NodeType.Keyword, "while"),
+                new Token(NodeType.Symbol, "("),
+                new Token(NodeType.Identifier, "inProgress"),
+                new Token(NodeType.Symbol, ")"),
+                new Token(NodeType.Symbol, "{"),
+                new Token(NodeType.Keyword, "let"),
+                new Token(NodeType.Identifier, "x"),
+                new Token(NodeType.Symbol, "="),
+                new Token(NodeType.Identifier, "y"),
+                new Token(NodeType.Symbol, ";"),
+                new Token(NodeType.Symbol, "}")
+            );
         }
 
         [TestMethod]
@@ -677,6 +680,104 @@ namespace JackAnalyser.Tests
                 </statements>
                 <symbol>}</symbol>
               </whileStatement>
+            ");
+        }
+    }
+
+    #endregion
+
+    #region SimpleSubroutineCallGrammar
+
+    [TestClass]
+    public class SimpleSubroutineCallGrammar
+    {
+        private Grammarian classUnderTest;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            classUnderTest = new Grammarian();
+            classUnderTest.LoadTokens(
+                new Token(NodeType.Identifier, "subroutineName"),
+                new Token(NodeType.Symbol, "("),
+                new Token(NodeType.IntegerConstant, "5"),
+                new Token(NodeType.Symbol, ","),
+                new Token(NodeType.StringConstant, "rhubarb"),
+                new Token(NodeType.Symbol, ")")
+            );
+        }
+
+        [TestMethod]
+        public void ParsesCorrectly()
+        {
+            classUnderTest.ParseExpression().ShouldGenerateXml(@"
+                <expression>
+                    <term>
+                        <identifier>subroutineName</identifier>
+                        <symbol>(</symbol>
+                        <expressionList>
+                            <expression>
+                                <term>
+                                    <integerConstant>5</integerConstant>
+                                </term>
+                            </expression>
+                            <symbol>,</symbol>
+                            <expression>
+                                <term>
+                                    <stringConstant>rhubarb</stringConstant>
+                                </term>
+                            </expression>
+                        </expressionList>
+                        <symbol>)</symbol>
+                    </term>
+                </expression>
+            ");
+        }
+    }
+
+    #endregion
+
+    #region SubroutineCallGrammarWithPrefix
+
+    [TestClass]
+    public class SubroutineCallGrammarWithPrefix
+    {
+        private Grammarian classUnderTest;
+
+        [TestInitialize]
+        public void Setup()
+        {
+            classUnderTest = new Grammarian();
+            classUnderTest.LoadTokens(
+                new Token(NodeType.Identifier, "myClass"),
+                new Token(NodeType.Symbol, "."),
+                new Token(NodeType.Identifier, "doSomething"),
+                new Token(NodeType.Symbol, "("),
+                new Token(NodeType.IntegerConstant, "5"),
+                new Token(NodeType.Symbol, ")")
+            );
+        }
+
+        [TestMethod]
+        public void ParsesCorrectly()
+        {
+            classUnderTest.ParseExpression().ShouldGenerateXml(@"
+                <expression>
+                    <term>
+                        <identifier>myClass</identifier>
+                        <symbol>.</symbol>
+                        <identifier>doSomething</identifier>
+                        <symbol>(</symbol>
+                        <expressionList>
+                            <expression>
+                                <term>
+                                    <integerConstant>5</integerConstant>
+                                </term>
+                            </expression>
+                        </expressionList>
+                        <symbol>)</symbol>
+                    </term>
+                </expression>
             ");
         }
     }
