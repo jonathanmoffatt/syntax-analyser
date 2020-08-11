@@ -14,7 +14,7 @@ namespace JackAnalyser
 
         public override string ToString()
         {
-            return Value;
+            return $"{Type} '{Value}'";
         }
 
         public override XElement ToXml()

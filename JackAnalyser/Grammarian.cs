@@ -61,9 +61,9 @@ namespace JackAnalyser
             DequeueIdentifier(sd, "expected subroutine name");
             DequeueSymbol(sd, "(");
             if (Peek() != ")")
-                DequeueParameterList(sd);
+                sd.AddChild(ParseParameterList());
             DequeueSymbol(sd, ")");
-            DequeueSubroutineBody(sd);
+            sd.AddChild(ParseSubroutineBody());
             return sd;
         }
 
@@ -74,7 +74,7 @@ namespace JackAnalyser
             DequeueKeyword(statement);
             DequeueIdentifier(statement, "let statement expected an identifier");
             DequeueSymbol(statement, "=");
-            DequeueExpression(statement, "let statement expected an expression");
+            statement.AddChild(ParseExpression());
             DequeueSymbol(statement, ";");
             return statement;
         }
@@ -85,16 +85,16 @@ namespace JackAnalyser
             var statement = new Node(NodeType.IfStatement);
             DequeueKeyword(statement);
             DequeueSymbol(statement, "(");
-            DequeueExpression(statement, "if statement expected an expression");
+            statement.AddChild(ParseExpression());
             DequeueSymbol(statement, ")");
             DequeueSymbol(statement, "{");
-            DequeueStatements(statement);
+            statement.AddChild(ParseStatements());
             DequeueSymbol(statement, "}");
             if (Peek() == "else")
             {
                 DequeueKeyword(statement);
                 DequeueSymbol(statement, "{");
-                DequeueStatements(statement);
+                statement.AddChild(ParseStatements());
                 DequeueSymbol(statement, "}");
             }
             return statement;
@@ -106,7 +106,7 @@ namespace JackAnalyser
             var statement = new Node(NodeType.ReturnStatement);
             DequeueKeyword(statement);
             if (Peek() != ";")
-                DequeueExpression(statement, "return statement expected an expression");
+                statement.AddChild(ParseExpression());
             DequeueSymbol(statement, ";");
             return statement;
         }
@@ -117,17 +117,17 @@ namespace JackAnalyser
             var statement = new Node(NodeType.WhileStatement);
             DequeueKeyword(statement);
             DequeueSymbol(statement, "(");
-            DequeueExpression(statement, "while statement expected an expression");
+            statement.AddChild(ParseExpression());
             DequeueSymbol(statement, ")");
             DequeueSymbol(statement, "{");
-            DequeueStatements(statement);
+            statement.AddChild(ParseStatements());
             DequeueSymbol(statement, "}");
             return statement;
         }
 
-        private void DequeueParameterList(Node parent)
+        public Node ParseParameterList()
         {
-            var pl = parent.AddChild(new Node(NodeType.ParameterList));
+            var pl = new Node(NodeType.ParameterList);
             bool another;
             do
             {
@@ -136,22 +136,25 @@ namespace JackAnalyser
                 another = Peek() == ",";
                 if (another) DequeueSymbol(pl, ",");
             } while (another);
+            return pl;
         }
 
-        private void DequeueSubroutineBody(Node parent)
+        public Node ParseSubroutineBody()
         {
-            var body = parent.AddChild(new Node(NodeType.SubroutineBody));
+            var body = new Node(NodeType.SubroutineBody);
             DequeueSymbol(body, "{");
-            DequeueVariableDeclarations(body);
-            DequeueStatements(body);
+            body.AddChildren(ParseVariableDeclarations());
+            body.AddChild(ParseStatements());
             DequeueSymbol(body, "}");
+            return body;
         }
 
-        private void DequeueVariableDeclarations(Node body)
+        public Node[] ParseVariableDeclarations()
         {
+            var variableDeclarations = new List<Node>();
             while (Peek() == "var")
             {
-                var variables = body.AddChild(new Node(NodeType.VariableDeclaration));
+                var variables = new Node(NodeType.VariableDeclaration);
                 DequeueKeyword(variables);
                 DequeueType(variables);
                 bool more;
@@ -162,47 +165,49 @@ namespace JackAnalyser
                     if (more) DequeueSymbol(variables, ",");
                 } while (more);
                 DequeueSymbol(variables, ";");
+                variableDeclarations.Add(variables);
             }
+            return variableDeclarations.ToArray();
         }
 
-        private void DequeueStatements(Node parent)
+        public Node ParseStatements()
         {
-            if (Peek() != "}")
+            if (Peek() == "}") return null;
+            var statements = new Node(NodeType.Statements);
+            while (Peek() != "}")
             {
-                var statements = parent.AddChild(new Node(NodeType.Statements));
-                while (Peek() != "}")
-                {
-                    statements.AddChild(ParseLetStatement());
-                    statements.AddChild(ParseIfStatement());
-                    statements.AddChild(ParseReturnStatement());
-                    statements.AddChild(ParseWhileStatement());
-                }
+                statements.AddChild(ParseLetStatement());
+                statements.AddChild(ParseIfStatement());
+                statements.AddChild(ParseReturnStatement());
+                statements.AddChild(ParseWhileStatement());
             }
+            return statements;
         }
 
-        private void DequeueExpression(Node parent, string error)
+        public Node ParseExpression()
         {
-            var expression = parent.AddChild(new Node(NodeType.Expression));
-            DequeueTerm(expression);
+            var expression = new Node(NodeType.Expression);
+            expression.AddChild(ParseTerm());
             while (IsOperator(Peek()))
             {
                 DequeueSymbol(expression, Peek());
-                DequeueTerm(expression);
+                expression.AddChild(ParseTerm());
             }
+            return expression;
         }
 
-        private void DequeueTerm(Node parent)
+        public Node ParseTerm()
         {
-            var term = parent.AddChild(new Node(NodeType.Term));
+            var term = new Node(NodeType.Term);
             if (IsUnaryOperator(Peek()))
             {
                 DequeueSymbol(term, Peek());
-                DequeueTerm(term);
+                term.AddChild(ParseTerm());
             }
             else if (Peek() == "(")
             {
                 DequeueSymbol(term, "(");
-                DequeueExpression(term, "term expected expression after '('");
+                term.AddChild(ParseExpression());
                 DequeueSymbol(term, ")");
             }
             else
@@ -211,10 +216,11 @@ namespace JackAnalyser
                 if (Peek() == "[")
                 {
                     DequeueSymbol(term, "[");
-                    DequeueExpression(term, "term expected expression");
+                    term.AddChild(ParseExpression());
                     DequeueSymbol(term, "]");
                 }
             }
+            return term;
         }
 
         private void DequeueType(Node parent)
@@ -228,28 +234,31 @@ namespace JackAnalyser
 
         private void DequeueKeyword(Node parent)
         {
-            parent.AddChild(tokens.Dequeue());
+            Token keyword = tokens.Dequeue();
+            if (keyword.Type != NodeType.Keyword)
+                throw new ApplicationException($"expected keyword, got {keyword} instead");
+            parent.AddChild(keyword);
         }
 
         private Token DequeueIdentifier(Node parent, string error)
         {
-            Token identifier = Dequeue();
-            if (identifier?.Type == NodeType.Identifier)
+            Token token = Dequeue();
+            if (token?.Type == NodeType.Identifier)
             {
-                parent.AddChild(identifier);
+                parent.AddChild(token);
                 if (Peek() == "[")
                 {
                     DequeueSymbol(parent, "[");
-                    DequeueExpression(parent, "expected expression");
+                    parent.AddChild(ParseExpression());
                     DequeueSymbol(parent, "]");
                 }
             }
             else
             {
-                string suffix = identifier == null ? ", reached end of file instead" : $", got '{identifier}' instead";
+                string suffix = token == null ? ", reached end of file instead" : $", got {token} instead";
                 throw new ApplicationException(error + suffix);
             }
-            return identifier;
+            return token;
         }
 
         private Token DequeueSymbol(Node parent, string symbol)
@@ -257,7 +266,7 @@ namespace JackAnalyser
             Token token = Dequeue();
             if (token == null || token.Type != NodeType.Symbol || token.Value != symbol)
             {
-                string suffix = token == null ? "reached end of file instead" : $"got '{token}' instead";
+                string suffix = token == null ? "reached end of file instead" : $"got {token} instead";
                 throw new ApplicationException($"expected symbol '{symbol}', {suffix}");
             }
             return parent.AddChild(token);

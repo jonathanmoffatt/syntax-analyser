@@ -22,6 +22,12 @@ namespace JackAnalyser
             return node;
         }
 
+        public void AddChildren<T>(params T[] nodes) where T : NodeBase
+        {
+            foreach (var node in nodes)
+                AddChild(node);
+        }
+
         public override XElement ToXml()
         {
             string elementName = Type.GetAttribute<ElementNameAttribute, NodeType>().Name;

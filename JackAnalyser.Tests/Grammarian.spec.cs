@@ -53,7 +53,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.ParseClass())
                 .Should().Throw<ApplicationException>()
-                .WithMessage("class expected a className identifier, got '{' instead");
+                .WithMessage("class expected a className identifier, got Symbol '{' instead");
         }
 
         [TestMethod]
@@ -63,7 +63,7 @@ namespace JackAnalyser.Tests
             classUnderTest
                 .Invoking(c => c.ParseClass())
                 .Should().Throw<ApplicationException>()
-                .WithMessage("expected symbol '{', got '}' instead");
+                .WithMessage("expected symbol '{', got Symbol '}' instead");
         }
 
         [TestMethod]
