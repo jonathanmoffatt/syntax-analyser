@@ -27,24 +27,29 @@ namespace JackAnalyser
         private static void Process(string sourceFile)
         {
             Console.WriteLine($"Processing {Path.GetFileName(sourceFile)} ...");
-            using var fs = new FileStream(sourceFile, FileMode.Open);
-            using var tokeniser = new Tokeniser(fs);
-            var parser = new Parser(new Grammarian());
-            parser.Parse(tokeniser);
-            SaveXml(sourceFile, parser.TokensXml(), true);
-            SaveXml(sourceFile, parser.ToXml(), false);
+            using (var fs = new FileStream(sourceFile, FileMode.Open))
+            using (var tokeniser = new Tokeniser(fs))
+            {
+                var parser = new Parser(new Grammarian());
+                parser.Parse(tokeniser);
+                SaveXml(sourceFile, parser.TokensXml(), true);
+                SaveXml(sourceFile, parser.ToXml(), false);
+            }
         }
 
         private static void SaveXml(string sourceFile, XDocument xml, bool isTokens)
         {
             string fileName = GetOutputFileName(sourceFile, isTokens ? "T" : "");
-            using var xmlWriter = XmlWriter.Create(fileName, new XmlWriterSettings
+            XmlWriterSettings settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true,
                 Indent = true,
                 Encoding = new UTF8Encoding(false)
-            });
-            xml.Save(xmlWriter);
+            };
+            using (var xmlWriter = XmlWriter.Create(fileName, settings))
+            {
+                xml.Save(xmlWriter);
+            }
             Console.WriteLine($"... {(isTokens ? "tokens" : "parsed output")} written to {Path.GetFileName(fileName)}");
         }
 
@@ -104,15 +109,6 @@ namespace JackAnalyser
                 Console.WriteLine($"    {file}");
             }
             return files;
-        }
-
-        private static void WriteToOutput(string sourceFileOrDirectory, string[] results)
-        {
-            string outputFile = GetOutputFileName(sourceFileOrDirectory);
-            if (File.Exists(outputFile))
-                File.Delete(outputFile);
-            File.WriteAllLines(outputFile, results);
-            Console.WriteLine($"Results written to {outputFile}");
         }
 
         private static string GetOutputFileName(string sourceFile, string suffix = "")
