@@ -40,9 +40,9 @@ namespace JackAnalyser.Tests
     public class WhenGettingABranchNodeAsXml
     {
         [TestMethod]
-        public void ReturnsEmptyElementIfThereAreNoChildren()
+        public void DoesNotSelfCloseElementIfThereAreNoChildren()
         {
-            new Node(NodeType.Statements).ToXml().ToString().Should().Be("<statements />");
+            new Node(NodeType.Statements).ToXml().ToString().Should().Be("<statements>\n</statements>");
         }
 
         [TestMethod]

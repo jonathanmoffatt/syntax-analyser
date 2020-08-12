@@ -60,8 +60,7 @@ namespace JackAnalyser
             DequeueType(sd);
             DequeueIdentifier(sd, "expected subroutine name");
             DequeueSymbol(sd, "(");
-            if (Peek() != ")")
-                sd.AddChild(ParseParameterList());
+            sd.AddChild(ParseParameterList());
             DequeueSymbol(sd, ")");
             sd.AddChild(ParseSubroutineBody());
             return sd;
@@ -146,14 +145,14 @@ namespace JackAnalyser
         public Node ParseParameterList()
         {
             var pl = new Node(NodeType.ParameterList);
-            bool another;
-            do
+            bool another = Peek() != ")";
+            while (another)
             {
                 DequeueType(pl);
                 DequeueIdentifier(pl, "expected parameter list identifier");
                 another = Peek() == ",";
                 if (another) DequeueSymbol(pl, ",");
-            } while (another);
+            };
             return pl;
         }
 

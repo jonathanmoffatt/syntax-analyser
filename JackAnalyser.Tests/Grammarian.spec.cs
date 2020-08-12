@@ -530,9 +530,7 @@ namespace JackAnalyser.Tests
         public void ParsesCorrectlyWithoutAnElseBlock()
         {
             classUnderTest.LoadTokens(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14);
-            Node node = classUnderTest.ParseIfStatement();
-            Console.WriteLine(node.ToXml());
-            node.ShouldGenerateXml(@"
+            classUnderTest.ParseIfStatement().ShouldGenerateXml(@"
                 <ifStatement>
                   <keyword>if</keyword>
                   <symbol>(</symbol>
@@ -799,6 +797,7 @@ namespace JackAnalyser.Tests
                 new Token(NodeType.Keyword, "do"),
                 new Token(NodeType.Identifier, "something"),
                 new Token(NodeType.Symbol, "("),
+                new Token(NodeType.Identifier, "x"),
                 new Token(NodeType.Symbol, ")"),
                 new Token(NodeType.Symbol, ";")
             );
@@ -812,7 +811,13 @@ namespace JackAnalyser.Tests
                     <keyword>do</keyword>
                     <identifier>something</identifier>
                     <symbol>(</symbol>
-                    <expressionList/>
+                    <expressionList>
+                        <expression>
+                            <term>
+                                <identifier>x</identifier>
+                            </term>
+                        </expression>
+                    </expressionList>
                     <symbol>)</symbol>
                     <symbol>;</symbol>
                 </doStatement>
