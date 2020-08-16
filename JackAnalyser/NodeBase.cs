@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace JackAnalyser
+﻿namespace JackAnalyser
 {
     public abstract class NodeBase
     {
