@@ -5,7 +5,7 @@ namespace JackAnalyser
 {
     public static class EnumExtensions
     {
-        public static T GetAttribute<T, TE>(this TE source) where TE : Enum
+        public static T GetAttribute<T, TE>(this TE source)
         {
             var enumType = typeof(TE);
             var memberInfos = enumType.GetMember(source.ToString());

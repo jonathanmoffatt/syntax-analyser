@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Xml.Linq;
 
 namespace JackAnalyser
 {
@@ -30,21 +29,7 @@ namespace JackAnalyser
             Tree = grammarian.ParseClass();
         }
 
-        public Token[] Tokens() => tokens.ToArray();
-
-        public XDocument ToXml() => new XDocument(Tree.ToXml());
-
-        public XDocument TokensXml()
-        {
-            var xml = new XDocument();
-            XElement root = new XElement("tokens");
-            xml.Add(root);
-            foreach (Token token in tokens)
-            {
-                root.Add(token.ToXml());
-            }
-            return xml;
-        }
+        public Token[] Tokens => tokens.ToArray();
 
     }
 }

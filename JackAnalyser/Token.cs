@@ -1,6 +1,4 @@
-﻿using System.Xml.Linq;
-
-namespace JackAnalyser
+﻿namespace JackAnalyser
 {
     public class Token : NodeBase
     {
@@ -15,12 +13,6 @@ namespace JackAnalyser
         public override string ToString()
         {
             return $"{Type} '{Value}'";
-        }
-
-        public override XElement ToXml()
-        {
-            string elementName = Type.GetAttribute<ElementNameAttribute, NodeType>().Name;
-            return new XElement(elementName, Value);
         }
     }
 }

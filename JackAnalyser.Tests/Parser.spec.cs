@@ -28,7 +28,7 @@ namespace JackAnalyser.Tests
         {
             tokeniser.Setup(t => t.GetNextToken()).Returns(() => null);
             classUnderTest.Parse(tokeniser.Object);
-            classUnderTest.Tokens().Should().BeEmpty();
+            classUnderTest.Tokens.Should().BeEmpty();
         }
 
         [TestMethod]
@@ -42,7 +42,7 @@ namespace JackAnalyser.Tests
                 .Returns(new Token(NodeType.Symbol, "}"))
                 .Returns(() => null);
             classUnderTest.Parse(tokeniser.Object);
-            classUnderTest.Tokens().Should().HaveCount(4);
+            classUnderTest.Tokens.Should().HaveCount(4);
         }
 
         [TestMethod]

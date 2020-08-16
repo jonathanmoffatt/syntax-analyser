@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Linq;
-using System.Xml.Linq;
+using System.Xml;
 using FluentAssertions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Moq.AutoMock;
 
 namespace JackAnalyser.Tests
 {
@@ -12,7 +9,10 @@ namespace JackAnalyser.Tests
     {
         public static void ShouldGenerateXml(this NodeBase node, string expectedXml)
         {
-            node.ToXml().Should().BeEquivalentTo(XElement.Parse(expectedXml));
+            var converter = new XmlConverter();
+            var doc = new XmlDocument();
+            doc.LoadXml(expectedXml);
+            converter.ConvertNode(node).Should().BeEquivalentTo(doc);
         }
     }
 

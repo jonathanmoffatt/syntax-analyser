@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace JackAnalyser
 {
@@ -31,13 +30,14 @@ namespace JackAnalyser
             using (var tokeniser = new Tokeniser(fs))
             {
                 var parser = new Parser(new Grammarian());
+                var xmlConverter = new XmlConverter();
                 parser.Parse(tokeniser);
-                SaveXml(sourceFile, parser.TokensXml(), true);
-                SaveXml(sourceFile, parser.ToXml(), false);
+                SaveXml(sourceFile, xmlConverter.ConvertTokens(parser.Tokens), true);
+                SaveXml(sourceFile, xmlConverter.ConvertNode(parser.Tree), false);
             }
         }
 
-        private static void SaveXml(string sourceFile, XDocument xml, bool isTokens)
+        private static void SaveXml(string sourceFile, XmlDocument xml, bool isTokens)
         {
             string fileName = GetOutputFileName(sourceFile, isTokens ? "T" : "");
             XmlWriterSettings settings = new XmlWriterSettings
